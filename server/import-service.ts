@@ -359,7 +359,6 @@ export class ImportService {
         return this.parseCSV(fileContent, type);
     }
   }
-  }
 
   // Generate import template
   generateTemplate(type: 'customers' | 'stock' | 'invoices') {
