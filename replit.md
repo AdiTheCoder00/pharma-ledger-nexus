@@ -119,6 +119,12 @@ Changelog:
   * Enhanced GSTR1 management with fully functional filing, reconciliation, and reports sections
   * Updated return period to default to 2025 in GSTR1 overview
   * Replaced all "Coming Soon" placeholders in GSTR1 with comprehensive functionality
+- June 23, 2025. Added transaction import functionality:
+  * Added new "Transactions" tab to the data import interface
+  * Implemented comprehensive transaction import service with intelligent grouping
+  * Added support for all transaction types (sales, purchases, returns)
+  * Created transaction template generation with proper field mapping
+  * Set up PostgreSQL database with all required tables for production use
 ```
 
 ## User Preferences
