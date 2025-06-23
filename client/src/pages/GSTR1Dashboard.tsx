@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Download, FileText, Calculator } from 'lucide-react';
+import Navigation from '@/components/Navigation';
 
 interface HSNCategorization {
   hsnCode: string;
@@ -127,8 +128,10 @@ export default function GSTR1Dashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      <div className="ml-64 p-6 space-y-6">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">GSTR-1 Dashboard</h1>
           <p className="text-muted-foreground">HSN categorization for B2B and B2C transactions</p>
@@ -384,6 +387,7 @@ export default function GSTR1Dashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

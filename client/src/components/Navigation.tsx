@@ -171,8 +171,8 @@ const Navigation = () => {
       setExpandedSections((prev) =>
         prev.includes("reports") ? prev : [...prev, "reports"],
       );
-    } else if (path === "/gst-compliance/gstr1-reports") {
-      setActiveSection("gstr1-reports");
+    } else if (path === "/gst-compliance/gstr1-reports" || path === "/gst-compliance/hsn-summary") {
+      setActiveSection(path.includes("gstr1") ? "gstr1-reports" : "hsn-summary");
       setExpandedSections((prev) =>
         prev.includes("gst-compliance") ? prev : [...prev, "gst-compliance"],
       );
