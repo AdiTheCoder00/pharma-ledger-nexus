@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { gstr1Service } from "./gstr1-service";
+import { db } from "./db";
+import * as schema from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // GSTR-1 HSN Categorization Routes
@@ -172,6 +174,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating template:", error);
       res.status(500).json({ error: "Failed to generate template" });
+    }
+  });
+
+  // Get customers from database
+  app.get("/api/customers", async (req, res) => {
+    try {
+      const customers = await db.select().from(schema.customers).orderBy(schema.customers.createdAt);
+      res.json(customers);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      res.status(500).json({ error: "Failed to fetch customers" });
+    }
+  });
+
+  // Get stock items from database
+  app.get("/api/stock-items", async (req, res) => {
+    try {
+      const stockItems = await db.select().from(schema.stockItems).orderBy(schema.stockItems.createdAt);
+      res.json(stockItems);
+    } catch (error) {
+      console.error("Error fetching stock items:", error);
+      res.status(500).json({ error: "Failed to fetch stock items" });
     }
   });
 

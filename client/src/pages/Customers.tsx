@@ -35,10 +35,16 @@ const Customers = () => {
     }
   };
 
-  const loadCustomers = () => {
-    const customerList = dataStore.getCustomers();
-    setCustomers(customerList);
-    setFilteredCustomers(customerList);
+  const loadCustomers = async () => {
+    try {
+      const response = await fetch('/api/customers');
+      const customerList = await response.json();
+      setCustomers(customerList);
+      setFilteredCustomers(customerList);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      toast.error('Failed to load customers');
+    }
   };
 
   useEffect(() => {

@@ -14,8 +14,8 @@ import { toast } from "@/components/ui/sonner";
 
 const StockItems = () => {
   const location = useLocation();
-  const [stockItems, setStockItems] = useState<StockItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<StockItem[]>([]);
+  const [stockItems, setStockItems] = useState<any[]>([]);
+  const [filteredStockItems, setFilteredStockItems] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -39,10 +39,16 @@ const StockItems = () => {
     }
   };
 
-  const loadStockItems = () => {
-    const items = dataStore.getStockItems();
-    setStockItems(items);
-    setFilteredItems(items);
+  const loadStockItems = async () => {
+    try {
+      const response = await fetch('/api/stock-items');
+      const items = await response.json();
+      setStockItems(items);
+      setFilteredStockItems(items);
+    } catch (error) {
+      console.error('Error fetching stock items:', error);
+      toast.error('Failed to load stock items');
+    }
   };
 
   useEffect(() => {
@@ -54,9 +60,9 @@ const StockItems = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(item =>
-        item.drugName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.manufacturer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.batch.toLowerCase().includes(searchTerm.toLowerCase())
+        item.batchNumber.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -64,14 +70,23 @@ const StockItems = () => {
       filtered = filtered.filter(item => item.category === filterCategory);
     }
 
-    setFilteredItems(filtered);
+    setFilteredStockItems(filtered);
   }, [stockItems, searchTerm, filterCategory]);
 
-  const handleDeleteItem = (id: string) => {
+  const handleDeleteItem = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
-      dataStore.deleteStockItem(id);
-      loadStockItems();
-      toast.success("Stock item deleted successfully!");
+      try {
+        const response = await fetch(`/api/stock-items/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          loadStockItems();
+          toast.success("Stock item deleted successfully!");
+        } else {
+          toast.error("Failed to delete stock item");
+        }
+      } catch (error) {
+        console.error('Error deleting stock item:', error);
+        toast.error("Failed to delete stock item");
+      }
     }
   };
 
@@ -158,7 +173,7 @@ const StockItems = () => {
             </div>
 
             {/* Stock Items Table */}
-            {filteredItems.length > 0 ? (
+            {filteredStockItems.length > 0 ? (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -175,17 +190,17 @@ const StockItems = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredItems.map((item) => {
+                    {filteredStockItems.map((item) => {
                       const { status, color } = getStockStatus(item);
                       return (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.drugName}</TableCell>
+                          <TableCell className="font-medium">{item.name || item.drugName}</TableCell>
                           <TableCell>{item.manufacturer}</TableCell>
                           <TableCell>{item.category}</TableCell>
-                          <TableCell>{item.batch}</TableCell>
-                          <TableCell>{new Date(item.expiryDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{item.batchNumber || item.batch}</TableCell>
+                          <TableCell>{new Date(item.expiryDate || item.expiry_date).toLocaleDateString()}</TableCell>
                           <TableCell>{item.quantity}</TableCell>
-                          <TableCell>₹{item.mrp.toLocaleString()}</TableCell>
+                          <TableCell>₹{(item.mrp || 0).toLocaleString()}</TableCell>
                           <TableCell>
                             <Badge variant={color}>{status}</Badge>
                           </TableCell>
