@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +15,13 @@ import {
   Settings, 
   ChevronDown,
   ChevronRight,
-  AlertTriangle,
   UserCheck,
   LogOut,
   Bell
 } from 'lucide-react';
 
 const Navigation = () => {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [expandedSections, setExpandedSections] = useState(['inventory', 'sales', 'accounting']);
 
@@ -30,6 +31,38 @@ const Navigation = () => {
         ? prev.filter(s => s !== section)
         : [...prev, section]
     );
+  };
+
+  const handleNavigation = (itemId: string) => {
+    setActiveSection(itemId);
+    
+    // Navigate to different pages based on the item
+    switch (itemId) {
+      case 'dashboard':
+        navigate('/');
+        break;
+      case 'settings':
+        navigate('/settings');
+        break;
+      case 'stock-items':
+        navigate('/inventory/stock-items');
+        break;
+      case 'sales-invoice':
+        navigate('/sales/invoice');
+        break;
+      case 'customers':
+        navigate('/parties/customers');
+        break;
+      case 'ledgers':
+        navigate('/accounting/ledgers');
+        break;
+      case 'profit-loss':
+        navigate('/reports/profit-loss');
+        break;
+      default:
+        // For other items, show a coming soon alert
+        alert(`${itemId.replace('-', ' ')} feature is coming soon!`);
+    }
   };
 
   const menuItems = [
@@ -159,13 +192,10 @@ const Navigation = () => {
                   item.active && "bg-blue-50 text-blue-700"
                 )}
                 onClick={() => {
-                  setActiveSection(item.id);
                   if (item.children) {
                     toggleSection(item.id);
-                  }
-                  // Handle navigation to settings
-                  if (item.id === 'settings') {
-                    window.location.href = '/settings';
+                  } else {
+                    handleNavigation(item.id);
                   }
                 }}
               >
@@ -185,7 +215,7 @@ const Navigation = () => {
                       key={child.id}
                       variant="ghost"
                       className="w-full justify-start h-auto p-2 text-sm text-gray-600 hover:text-gray-900"
-                      onClick={() => setActiveSection(child.id)}
+                      onClick={() => handleNavigation(child.id)}
                     >
                       {child.label}
                     </Button>
