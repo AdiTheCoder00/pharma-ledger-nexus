@@ -205,7 +205,7 @@ export class ImportService {
   }
 
   // Parse XML data to appropriate format
-  parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices'): any[] {
+  parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices') {
     const data = [];
     try {
       // Server-side XML parsing using built-in XML parser
@@ -246,7 +246,7 @@ export class ImportService {
   }
 
   // Parse DAT (pipe-delimited) data to appropriate format
-  parseDAT(datContent: string, type: 'customers' | 'stock' | 'invoices'): any[] {
+  parseDAT(datContent: string, type: 'customers' | 'stock' | 'invoices') {
     const lines = datContent.trim().split('\n');
     const headers = lines[0].split('|').map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'));
     const data = [];
@@ -267,7 +267,7 @@ export class ImportService {
   }
 
   // Parse CSV data to appropriate format
-  parseCSV(csvContent: string, type: 'customers' | 'stock' | 'invoices'): any[] {
+  parseCSV(csvContent: string, type: 'customers' | 'stock' | 'invoices') {
     const lines = csvContent.trim().split('\n');
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'));
     const data = [];
@@ -337,7 +337,7 @@ export class ImportService {
   }
 
   // Auto-detect file format and parse accordingly
-  parseFile(fileContent: string, type: 'customers' | 'stock' | 'invoices', format?: string): any[] {
+  parseFile(fileContent: string, type: 'customers' | 'stock' | 'invoices', format?: string) {
     if (!format) {
       // Auto-detect format
       if (fileContent.trim().startsWith('<?xml') || fileContent.includes('<')) {
@@ -362,7 +362,7 @@ export class ImportService {
   }
 
   // Generate import template
-  generateTemplate(type: 'customers' | 'stock' | 'invoices'): string {
+  generateTemplate(type: 'customers' | 'stock' | 'invoices') {
     const templates = {
       customers: 'customer_name,phone,email,address,gst_number,credit_limit,opening_balance\n"Sample Pharmacy","9876543210","sample@example.com","123 Main St","29ABCDE1234F1Z5","50000","0"',
       stock: 'item_name,manufacturer,category,batch_number,expiry_date,quantity,mrp,purchase_rate,hsn_code,rack_location\n"Paracetamol 500mg","Cipla Ltd","Tablet","PC001","2025-12-31","100","5.00","3.50","30049000","A1"',
