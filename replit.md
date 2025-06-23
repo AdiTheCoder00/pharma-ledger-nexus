@@ -104,6 +104,13 @@ This is a full-stack pharmaceutical inventory management application built with 
 ```
 Changelog:
 - June 23, 2025. Initial setup
+- June 23, 2025. Implemented comprehensive feature expansion:
+  * Added separate GST Compliance navigation category with 5 dedicated sub-items
+  * Implemented full functionality for all accounting modules (ledgers, journal entries, payments, etc.)
+  * Added complete sales and purchase workflow features (returns, delivery notes, quotations, etc.)
+  * Enhanced parties management with suppliers, drug licenses, and credit limits
+  * Replaced all "coming soon" placeholders with functional dashboards and analytics
+  * Updated navigation highlighting to support new GST compliance section
 ```
 
 ## User Preferences

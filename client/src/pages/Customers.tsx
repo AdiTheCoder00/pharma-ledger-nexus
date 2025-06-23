@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnimatedCard } from "@/components/ui/animated-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -48,17 +47,23 @@ const Customers = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = customers;
+
     if (searchTerm) {
-      const filtered = customers.filter(customer =>
+      filtered = filtered.filter(customer =>
         customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.phone.includes(searchTerm) ||
+        customer.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
       );
-      setFilteredCustomers(filtered);
-    } else {
-      setFilteredCustomers(customers);
     }
+
+    setFilteredCustomers(filtered);
   }, [customers, searchTerm]);
+
+  const handleCustomerAdded = (customer: Customer) => {
+    loadCustomers();
+    setShowAddModal(false);
+  };
 
   const handleDeleteCustomer = (id: string) => {
     if (window.confirm('Are you sure you want to delete this customer?')) {
@@ -80,6 +85,198 @@ const Customers = () => {
 
   const { title, description, icon: Icon } = getPageInfo();
 
+  const renderPartiesContent = () => {
+    const path = location.pathname;
+    
+    switch (path) {
+      case '/parties/customers':
+        return renderCustomersContent();
+      
+      case '/parties/suppliers':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Total Suppliers</p>
+                <p className="text-2xl font-bold text-blue-900">28</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Active</p>
+                <p className="text-2xl font-bold text-green-900">25</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-600">Outstanding</p>
+                <p className="text-2xl font-bold text-yellow-900">₹45,600</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <p className="text-sm text-purple-600">This Month</p>
+                <p className="text-2xl font-bold text-purple-900">₹1,25,400</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Supplier Management</h3>
+              <p className="text-gray-500 mb-6">Manage supplier relationships and purchase history</p>
+            </div>
+          </div>
+        );
+      
+      case '/parties/drug-licenses':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Valid Licenses</p>
+                <p className="text-2xl font-bold text-green-900">12</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-600">Expiring Soon</p>
+                <p className="text-2xl font-bold text-yellow-900">2</p>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg">
+                <p className="text-sm text-red-600">Expired</p>
+                <p className="text-2xl font-bold text-red-900">0</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Drug License Management</h3>
+              <p className="text-gray-500 mb-6">Track and manage pharmaceutical licenses and compliance</p>
+            </div>
+          </div>
+        );
+      
+      case '/parties/credit-limits':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Total Credit</p>
+                <p className="text-2xl font-bold text-blue-900">₹5,45,000</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Available</p>
+                <p className="text-2xl font-bold text-green-900">₹3,78,500</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-600">Utilized</p>
+                <p className="text-2xl font-bold text-yellow-900">₹1,66,500</p>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg">
+                <p className="text-sm text-red-600">Overdue</p>
+                <p className="text-2xl font-bold text-red-900">₹12,300</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <CreditCard className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Credit Limit Management</h3>
+              <p className="text-gray-500 mb-6">Monitor customer credit limits and outstanding amounts</p>
+            </div>
+          </div>
+        );
+      
+      default:
+        return renderCustomersContent();
+    }
+  };
+
+  const renderCustomersContent = () => {
+    return (
+      <>
+        {/* Customer Management Content */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search customers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon">
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Customers Table */}
+        {filteredCustomers.length > 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>GST Number</TableHead>
+                  <TableHead>Credit Limit</TableHead>
+                  <TableHead>Outstanding</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCustomers.map((customer) => {
+                  const { status, color } = getCreditStatus(customer);
+                  return (
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">{customer.name}</TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center text-sm">
+                            <Phone className="h-3 w-3 mr-1" />
+                            {customer.phone}
+                          </div>
+                          {customer.email && (
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Mail className="h-3 w-3 mr-1" />
+                              {customer.email}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{customer.gstNumber || 'N/A'}</TableCell>
+                      <TableCell>₹{customer.creditLimit.toLocaleString()}</TableCell>
+                      <TableCell>₹{customer.outstandingAmount.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={color}>{status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDeleteCustomer(customer.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No customers found</h3>
+            <p className="text-gray-500 mb-6">Get started by adding your first customer</p>
+            <Button onClick={() => setShowAddModal(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Customer
+            </Button>
+          </div>
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -93,180 +290,59 @@ const Customers = () => {
               {location.pathname.split('/').pop()?.replace('-', ' ').toUpperCase()}
             </Badge>
           </div>
-          <p className="text-gray-600">Manage your customer database</p>
+          <p className="text-gray-600">{description}</p>
         </div>
 
-        <AnimatedCard>
+        {/* Summary Stats for Customers page only */}
+        {location.pathname === '/parties/customers' && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-600">Total Customers</p>
+              <p className="text-2xl font-bold text-blue-900">{customers.length}</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <p className="text-sm text-green-600">Active</p>
+              <p className="text-2xl font-bold text-green-900">{customers.filter(c => c.outstandingAmount <= c.creditLimit).length}</p>
+            </div>
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <p className="text-sm text-yellow-600">Total Credit</p>
+              <p className="text-2xl font-bold text-yellow-900">₹{customers.reduce((sum, c) => sum + c.creditLimit, 0).toLocaleString()}</p>
+            </div>
+            <div className="bg-red-50 p-4 rounded-lg">
+              <p className="text-sm text-red-600">Outstanding</p>
+              <p className="text-2xl font-bold text-red-900">₹{customers.reduce((sum, c) => sum + c.outstandingAmount, 0).toLocaleString()}</p>
+            </div>
+          </div>
+        )}
+
+        <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Customer Management</CardTitle>
-                <CardDescription>Add and manage your customers with credit tracking</CardDescription>
+                <CardTitle>{title} Management</CardTitle>
+                <CardDescription>{description}</CardDescription>
               </div>
-              <Button onClick={() => setShowAddModal(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Customer
-              </Button>
+              {location.pathname === '/parties/customers' && (
+                <Button onClick={() => setShowAddModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Customer
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent>
-            {/* Search Bar */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search by name, phone, or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
-
-            {/* Customers Table */}
-            {filteredCustomers.length > 0 ? (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer Details</TableHead>
-                      <TableHead>Contact Info</TableHead>
-                      <TableHead>Credit Info</TableHead>
-                      <TableHead>Outstanding</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCustomers.map((customer) => {
-                      const creditStatus = getCreditStatus(customer);
-                      return (
-                        <TableRow key={customer.id} className="hover:bg-gray-50">
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{customer.name}</p>
-                              {customer.gstNumber && (
-                                <p className="text-sm text-gray-600">GST: {customer.gstNumber}</p>
-                              )}
-                              <p className="text-xs text-gray-500">
-                                Added: {new Date(customer.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="flex items-center text-sm">
-                                <Phone className="h-3 w-3 mr-1" />
-                                {customer.phone}
-                              </div>
-                              {customer.email && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Mail className="h-3 w-3 mr-1" />
-                                  {customer.email}
-                                </div>
-                              )}
-                              <div className="flex items-start text-sm text-gray-600">
-                                <MapPin className="h-3 w-3 mr-1 mt-0.5" />
-                                <span className="line-clamp-2">{customer.address}</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">₹{customer.creditLimit.toLocaleString()}</p>
-                              <p className="text-sm text-gray-600">Credit Limit</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">₹{customer.outstandingAmount.toLocaleString()}</p>
-                              <p className="text-sm text-gray-600">Outstanding</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={creditStatus.color}>
-                              {creditStatus.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDeleteCustomer(customer.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {customers.length === 0 ? 'No customers added yet' : 'No customers match your search'}
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  {customers.length === 0 
-                    ? 'Get started by adding your first customer'
-                    : 'Try adjusting your search criteria'
-                  }
-                </p>
-                {customers.length === 0 && (
-                  <Button onClick={() => setShowAddModal(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add First Customer
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {/* Summary Stats */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-blue-600">Total Customers</p>
-                <p className="text-2xl font-bold text-blue-900">{customers.length}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-green-600">Total Credit Limit</p>
-                <p className="text-2xl font-bold text-green-900">
-                  ₹{customers.reduce((sum, customer) => sum + customer.creditLimit, 0).toLocaleString()}
-                </p>
-              </div>
-              <div className="bg-yellow-50 p-4 rounded-lg">
-                <p className="text-sm text-yellow-600">Outstanding Amount</p>
-                <p className="text-2xl font-bold text-yellow-900">
-                  ₹{customers.reduce((sum, customer) => sum + customer.outstandingAmount, 0).toLocaleString()}
-                </p>
-              </div>
-              <div className="bg-red-50 p-4 rounded-lg">
-                <p className="text-sm text-red-600">Over Limit</p>
-                <p className="text-2xl font-bold text-red-900">
-                  {customers.filter(customer => customer.outstandingAmount > customer.creditLimit).length}
-                </p>
-              </div>
-            </div>
+            {renderPartiesContent()}
           </CardContent>
-        </AnimatedCard>
+        </Card>
       </div>
 
-      <AddCustomerModal 
-        open={showAddModal} 
-        onOpenChange={setShowAddModal}
-        onCustomerAdded={loadCustomers}
-      />
+      {location.pathname === '/parties/customers' && (
+        <AddCustomerModal 
+          open={showAddModal} 
+          onOpenChange={setShowAddModal}
+          onCustomerAdded={handleCustomerAdded}
+        />
+      )}
     </div>
   );
 };

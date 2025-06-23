@@ -114,6 +114,21 @@ const Navigation = () => {
     } else if (path === '/reports/party-reports') {
       setActiveSection('party-reports');
       setExpandedSections(prev => prev.includes('reports') ? prev : [...prev, 'reports']);
+    } else if (path === '/gst-compliance/gstr1-reports') {
+      setActiveSection('gstr1-reports');
+      setExpandedSections(prev => prev.includes('gst-compliance') ? prev : [...prev, 'gst-compliance']);
+    } else if (path === '/gst-compliance/gstr2a-reconciliation') {
+      setActiveSection('gstr2a-reconciliation');
+      setExpandedSections(prev => prev.includes('gst-compliance') ? prev : [...prev, 'gst-compliance']);
+    } else if (path === '/gst-compliance/gstr3b-filing') {
+      setActiveSection('gstr3b-filing');
+      setExpandedSections(prev => prev.includes('gst-compliance') ? prev : [...prev, 'gst-compliance']);
+    } else if (path === '/gst-compliance/hsn-summary') {
+      setActiveSection('hsn-summary');
+      setExpandedSections(prev => prev.includes('gst-compliance') ? prev : [...prev, 'gst-compliance']);
+    } else if (path === '/gst-compliance/gst-audit-trail') {
+      setActiveSection('gst-audit-trail');
+      setExpandedSections(prev => prev.includes('gst-compliance') ? prev : [...prev, 'gst-compliance']);
     }
   }, [location.pathname]);
 
@@ -214,14 +229,27 @@ const Navigation = () => {
       case 'balance-sheet':
         navigate('/reports/balance-sheet');
         break;
-      case 'gst-reports':
-        navigate('/reports/gst-reports');
-        break;
       case 'stock-reports':
         navigate('/reports/stock-reports');
         break;
       case 'party-reports':
         navigate('/reports/party-reports');
+        break;
+      // GST Compliance items
+      case 'gstr1-reports':
+        navigate('/gst-compliance/gstr1-reports');
+        break;
+      case 'gstr2a-reconciliation':
+        navigate('/gst-compliance/gstr2a-reconciliation');
+        break;
+      case 'gstr3b-filing':
+        navigate('/gst-compliance/gstr3b-filing');
+        break;
+      case 'hsn-summary':
+        navigate('/gst-compliance/hsn-summary');
+        break;
+      case 'gst-audit-trail':
+        navigate('/gst-compliance/gst-audit-trail');
         break;
       default:
         navigate('/');
@@ -299,9 +327,20 @@ const Navigation = () => {
       children: [
         { id: 'profit-loss', label: 'Profit & Loss' },
         { id: 'balance-sheet', label: 'Balance Sheet' },
-        { id: 'gst-reports', label: 'GST Reports' },
         { id: 'stock-reports', label: 'Stock Reports' },
         { id: 'party-reports', label: 'Party Reports' }
+      ]
+    },
+    {
+      id: 'gst-compliance',
+      label: 'GST & Compliance',
+      icon: FileText,
+      children: [
+        { id: 'gstr1-reports', label: 'GSTR-1 Reports' },
+        { id: 'gstr2a-reconciliation', label: 'GSTR-2A Reconciliation' },
+        { id: 'gstr3b-filing', label: 'GSTR-3B Filing' },
+        { id: 'hsn-summary', label: 'HSN Summary' },
+        { id: 'gst-audit-trail', label: 'GST Audit Trail' }
       ]
     },
     {

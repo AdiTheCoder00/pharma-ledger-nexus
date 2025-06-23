@@ -225,15 +225,199 @@ const SalesInvoicePage = () => {
           </>
         );
       
+      case 'return':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-red-50 p-4 rounded-lg">
+                <p className="text-sm text-red-600">Returns This Month</p>
+                <p className="text-2xl font-bold text-red-900">8</p>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Return Value</p>
+                <p className="text-2xl font-bold text-blue-900">₹12,450</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Processed</p>
+                <p className="text-2xl font-bold text-green-900">6</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Sales Returns</h3>
+              <p className="text-gray-500 mb-6">Process customer returns and issue credit notes</p>
+            </div>
+          </div>
+        );
+      
+      case 'delivery':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Total Deliveries</p>
+                <p className="text-2xl font-bold text-blue-900">156</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Delivered</p>
+                <p className="text-2xl font-bold text-green-900">142</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-600">Pending</p>
+                <p className="text-2xl font-bold text-yellow-900">12</p>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg">
+                <p className="text-sm text-red-600">Failed</p>
+                <p className="text-2xl font-bold text-red-900">2</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <TruckIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Delivery Notes</h3>
+              <p className="text-gray-500 mb-6">Track and manage delivery confirmations</p>
+            </div>
+          </div>
+        );
+      
+      case 'quotation':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Active Quotes</p>
+                <p className="text-2xl font-bold text-blue-900">23</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Converted</p>
+                <p className="text-2xl font-bold text-green-900">18</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-600">Quote Value</p>
+                <p className="text-2xl font-bold text-yellow-900">₹85,600</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Price Quotations</h3>
+              <p className="text-gray-500 mb-6">Create and manage customer quotations</p>
+            </div>
+          </div>
+        );
+      
+      case 'purchase-order':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Total Orders</p>
+                <p className="text-2xl font-bold text-blue-900">45</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Received</p>
+                <p className="text-2xl font-bold text-green-900">38</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-600">Pending</p>
+                <p className="text-2xl font-bold text-yellow-900">7</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <p className="text-sm text-purple-600">Order Value</p>
+                <p className="text-2xl font-bold text-purple-900">₹2,45,800</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <ShoppingCart className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Purchase Orders</h3>
+              <p className="text-gray-500 mb-6">Create and track supplier purchase orders</p>
+            </div>
+          </div>
+        );
+      
+      case 'purchase-invoice':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Purchase Invoices</p>
+                <p className="text-2xl font-bold text-blue-900">67</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Paid</p>
+                <p className="text-2xl font-bold text-green-900">₹1,85,600</p>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg">
+                <p className="text-sm text-red-600">Outstanding</p>
+                <p className="text-2xl font-bold text-red-900">₹45,200</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Purchase Invoices</h3>
+              <p className="text-gray-500 mb-6">Process and track supplier invoices</p>
+            </div>
+          </div>
+        );
+      
+      case 'purchase-return':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-red-50 p-4 rounded-lg">
+                <p className="text-sm text-red-600">Returns</p>
+                <p className="text-2xl font-bold text-red-900">5</p>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Return Value</p>
+                <p className="text-2xl font-bold text-blue-900">₹8,950</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Processed</p>
+                <p className="text-2xl font-bold text-green-900">4</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <Package2 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Purchase Returns</h3>
+              <p className="text-gray-500 mb-6">Return defective items to suppliers</p>
+            </div>
+          </div>
+        );
+      
+      case 'goods-receipt':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-600">Receipts</p>
+                <p className="text-2xl font-bold text-blue-900">89</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-600">Items Received</p>
+                <p className="text-2xl font-bold text-green-900">1,245</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="text-sm text-yellow-600">Pending</p>
+                <p className="text-2xl font-bold text-yellow-900">12</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <p className="text-sm text-purple-600">Value</p>
+                <p className="text-2xl font-bold text-purple-900">₹3,45,600</p>
+              </div>
+            </div>
+            <div className="text-center py-8">
+              <TruckIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Goods Receipt</h3>
+              <p className="text-gray-500 mb-6">Record received inventory from suppliers</p>
+            </div>
+          </div>
+        );
+      
       default:
         return (
           <div className="text-center py-12">
             <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Feature Coming Soon</h3>
-            <p className="text-gray-500 mb-6">This feature is under development and will be available soon</p>
-            <Button disabled variant="outline">
-              Coming Soon
-            </Button>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Module Dashboard</h3>
+            <p className="text-gray-500 mb-6">Select a feature from the navigation menu</p>
           </div>
         );
     }
