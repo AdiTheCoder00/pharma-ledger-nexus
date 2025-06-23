@@ -361,7 +361,6 @@ const Navigation = () => {
           </div>
           <div>
             <h1 className="font-bold text-lg text-gray-900">Maini Trading</h1>
-            <p className="text-xs text-gray-500">Distributor Pro</p>
           </div>
         </div>
       </div>
