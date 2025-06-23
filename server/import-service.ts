@@ -164,10 +164,11 @@ export class ImportService {
         const firstItem = items[0];
         
         // Find or create customer
-        let customer = await db.select().from(customers).where(eq(customers.name, firstItem.customer_name)).limit(1);
+        const customerName = firstItem.customer_name || "Unknown Customer";
+        let customer = await db.select().from(customers).where(eq(customers.name, customerName)).limit(1);
         if (customer.length === 0) {
           const newCustomer = await db.insert(customers).values({
-            name: firstItem.customer_name,
+            name: customerName,
             phone: "0000000000",
             address: "Imported Address",
             gstNumber: firstItem.customer_gst || null,
@@ -189,7 +190,7 @@ export class ImportService {
         const invoiceData = {
           invoiceNumber: invoiceNumber,
           customerId: customer[0].id,
-          customerName: firstItem.customer_name,
+          customerName: customerName,
           customerType: firstItem.customer_gst ? "B2B" as const : "B2C" as const,
           customerGstin: firstItem.customer_gst || null,
           invoiceDate: new Date(firstItem.invoice_date),
