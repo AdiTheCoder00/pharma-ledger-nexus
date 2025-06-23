@@ -50,9 +50,16 @@ export default function Transactions() {
   });
 
   const totalTransactions = filteredTransactions.length;
-  const totalAmount = filteredTransactions.reduce((sum, t) => sum + parseFloat(t.totalAmount), 0);
-  const totalTax = filteredTransactions.reduce((sum, t) => 
-    sum + parseFloat(t.cgst) + parseFloat(t.sgst) + parseFloat(t.igst), 0);
+  const totalAmount = filteredTransactions.reduce((sum, t) => {
+    const amount = parseFloat(t.totalAmount);
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0);
+  const totalTax = filteredTransactions.reduce((sum, t) => {
+    const cgst = parseFloat(t.cgst) || 0;
+    const sgst = parseFloat(t.sgst) || 0;
+    const igst = parseFloat(t.igst) || 0;
+    return sum + cgst + sgst + igst;
+  }, 0);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -264,8 +271,8 @@ export default function Transactions() {
                         </td>
                         <td className="p-4">
                           <div className="text-right">
-                            <div className="font-medium">₹{parseFloat(transaction.totalAmount).toFixed(2)}</div>
-                            <div className="text-xs text-gray-500">₹{parseFloat(transaction.subtotal).toFixed(2)} + tax</div>
+                            <div className="font-medium">₹{(parseFloat(transaction.totalAmount) || 0).toFixed(2)}</div>
+                            <div className="text-xs text-gray-500">₹{(parseFloat(transaction.subtotal) || 0).toFixed(2)} + tax</div>
                           </div>
                         </td>
                         <td className="p-4">

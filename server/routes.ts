@@ -217,6 +217,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get sales invoices from database
+  app.get("/api/sales-invoices", async (req, res) => {
+    try {
+      const salesInvoices = await db.select().from(schema.salesInvoices).orderBy(schema.salesInvoices.createdAt);
+      res.json(salesInvoices);
+    } catch (error) {
+      console.error("Error fetching sales invoices:", error);
+      res.status(500).json({ error: "Failed to fetch sales invoices" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
