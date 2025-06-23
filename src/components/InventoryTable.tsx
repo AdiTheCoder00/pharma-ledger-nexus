@@ -6,93 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Download, Plus, Edit, Eye } from 'lucide-react';
+import { Search, Filter, Download, Plus, Package2 } from 'lucide-react';
 
 const InventoryTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
-  const inventory = [
-    {
-      id: 1,
-      drugName: 'Paracetamol 500mg',
-      manufacturer: 'Cipla Ltd',
-      category: 'Analgesic',
-      batch: 'PCM2024A',
-      quantity: 1500,
-      unit: 'Tablets',
-      mrp: 25.00,
-      purchaseRate: 18.50,
-      expiryDate: '2024-08-15',
-      location: 'Rack A-15',
-      gstRate: 12,
-      hsnCode: '30041090',
-      status: 'expiring'
-    },
-    {
-      id: 2,
-      drugName: 'Amoxicillin 250mg',
-      manufacturer: 'Sun Pharma',
-      category: 'Antibiotic',
-      batch: 'AMX2024B',
-      quantity: 750,
-      unit: 'Capsules',
-      mrp: 85.00,
-      purchaseRate: 68.00,
-      expiryDate: '2025-03-20',
-      location: 'Rack B-08',
-      gstRate: 12,
-      hsnCode: '30042090',
-      status: 'active'
-    },
-    {
-      id: 3,
-      drugName: 'Crocin Advance',
-      manufacturer: 'GSK',
-      category: 'Analgesic',
-      batch: 'CRC2024C',
-      quantity: 2000,
-      unit: 'Tablets',
-      mrp: 45.00,
-      purchaseRate: 34.20,
-      expiryDate: '2025-01-10',
-      location: 'Rack C-22',
-      gstRate: 12,
-      hsnCode: '30041090',
-      status: 'active'
-    },
-    {
-      id: 4,
-      drugName: 'Azithromycin 500mg',
-      manufacturer: 'Zydus',
-      category: 'Antibiotic',
-      batch: 'AZI2024D',
-      quantity: 25,
-      unit: 'Tablets',
-      mrp: 125.00,
-      purchaseRate: 95.00,
-      expiryDate: '2024-12-15',
-      location: 'Rack A-03',
-      gstRate: 12,
-      hsnCode: '30042090',
-      status: 'low_stock'
-    }
-  ];
-
-  const getStatusBadge = (status: string, quantity: number) => {
-    if (status === 'expiring') {
-      return <Badge variant="destructive">Expiring Soon</Badge>;
-    } else if (status === 'low_stock' || quantity < 50) {
-      return <Badge variant="secondary">Low Stock</Badge>;
-    } else {
-      return <Badge variant="outline">Active</Badge>;
-    }
-  };
+  const inventory: any[] = [];
 
   const filteredInventory = inventory.filter(item => {
-    const matchesSearch = item.drugName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.manufacturer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.batch.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = item.drugName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.manufacturer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.batch?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
@@ -145,89 +70,58 @@ const InventoryTable = () => {
           </Button>
         </div>
 
-        {/* Inventory Table */}
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Drug Details</TableHead>
-                <TableHead>Batch Info</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Pricing</TableHead>
-                <TableHead>Expiry</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredInventory.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{item.drugName}</p>
-                      <p className="text-sm text-gray-500">{item.manufacturer}</p>
-                      <p className="text-xs text-gray-400">{item.category}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{item.batch}</p>
-                      <p className="text-sm text-gray-500">{item.location}</p>
-                      <p className="text-xs text-gray-400">HSN: {item.hsnCode}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{item.quantity.toLocaleString()}</p>
-                      <p className="text-sm text-gray-500">{item.unit}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">₹{item.mrp.toFixed(2)}</p>
-                      <p className="text-sm text-gray-500">CP: ₹{item.purchaseRate.toFixed(2)}</p>
-                      <p className="text-xs text-gray-400">GST: {item.gstRate}%</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm">{item.expiryDate}</p>
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(item.status, item.quantity)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        {/* Empty State */}
+        {filteredInventory.length === 0 && (
+          <div className="text-center py-12">
+            <Package2 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No inventory items</h3>
+            <p className="text-gray-500 mb-6">Get started by adding your first stock item</p>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Stock Item
+            </Button>
+          </div>
+        )}
+
+        {/* Inventory Table - Only show if there are items */}
+        {filteredInventory.length > 0 && (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Drug Details</TableHead>
+                  <TableHead>Batch Info</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Pricing</TableHead>
+                  <TableHead>Expiry</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {/* Table rows would be rendered here when data exists */}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         {/* Summary Stats */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-sm text-blue-600">Total Items</p>
-            <p className="text-2xl font-bold text-blue-900">{inventory.length}</p>
+            <p className="text-2xl font-bold text-blue-900">0</p>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <p className="text-sm text-green-600">Total Value</p>
-            <p className="text-2xl font-bold text-green-900">₹2,45,670</p>
+            <p className="text-2xl font-bold text-green-900">₹0</p>
           </div>
           <div className="bg-yellow-50 p-4 rounded-lg">
             <p className="text-sm text-yellow-600">Low Stock Items</p>
-            <p className="text-2xl font-bold text-yellow-900">12</p>
+            <p className="text-2xl font-bold text-yellow-900">0</p>
           </div>
           <div className="bg-red-50 p-4 rounded-lg">
             <p className="text-sm text-red-600">Expiring Soon</p>
-            <p className="text-2xl font-bold text-red-900">5</p>
+            <p className="text-2xl font-bold text-red-900">0</p>
           </div>
         </div>
       </CardContent>

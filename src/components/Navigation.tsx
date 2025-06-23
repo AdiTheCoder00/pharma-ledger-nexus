@@ -43,8 +43,6 @@ const Navigation = () => {
       id: 'inventory',
       label: 'Inventory',
       icon: Package,
-      badge: '43',
-      badgeVariant: 'destructive' as const,
       children: [
         { id: 'stock-items', label: 'Stock Items' },
         { id: 'batch-tracking', label: 'Batch Tracking' },
@@ -134,7 +132,7 @@ const Navigation = () => {
             <UserCheck className="h-4 w-4 text-gray-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">Rajesh Pharma</p>
+            <p className="text-sm font-medium text-gray-900">User Name</p>
             <p className="text-xs text-gray-500">Administrator</p>
           </div>
           <Button variant="ghost" size="sm">
@@ -163,11 +161,6 @@ const Navigation = () => {
               >
                 <item.icon className="h-4 w-4 mr-3" />
                 <span className="flex-1 text-left">{item.label}</span>
-                {item.badge && (
-                  <Badge variant={item.badgeVariant || "secondary"} className="ml-2">
-                    {item.badge}
-                  </Badge>
-                )}
                 {item.children && (
                   expandedSections.includes(item.id) ? 
                     <ChevronDown className="h-4 w-4 ml-2" /> : 
