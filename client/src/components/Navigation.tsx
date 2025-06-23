@@ -17,6 +17,7 @@ import {
   UserCheck,
   LogOut,
   Bell,
+  ArrowRightLeft,
 } from "lucide-react";
 
 const Navigation = () => {
@@ -198,6 +199,8 @@ const Navigation = () => {
       setExpandedSections((prev) =>
         prev.includes("gst-compliance") ? prev : [...prev, "gst-compliance"],
       );
+    } else if (path === "/transactions") {
+      setActiveSection("transactions");
     } else if (path === "/data-import") {
       setActiveSection("data-import");
     }
@@ -325,6 +328,9 @@ const Navigation = () => {
       case "data-import":
         navigate("/data-import");
         break;
+      case "transactions":
+        navigate("/transactions");
+        break;
       default:
         navigate("/");
     }
@@ -416,6 +422,12 @@ const Navigation = () => {
         { id: "hsn-summary", label: "HSN Summary" },
         { id: "gst-audit-trail", label: "GST Audit Trail" },
       ],
+    },
+    {
+      id: "transactions",
+      label: "Transactions",
+      icon: ArrowRightLeft,
+      active: activeSection === "transactions",
     },
     {
       id: "data-import",
