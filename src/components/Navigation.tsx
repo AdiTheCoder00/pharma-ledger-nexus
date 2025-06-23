@@ -107,6 +107,12 @@ const Navigation = () => {
         { id: 'stock-reports', label: 'Stock Reports' },
         { id: 'party-reports', label: 'Party Reports' }
       ]
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: Settings,
+      active: activeSection === 'settings'
     }
   ];
 
@@ -156,6 +162,10 @@ const Navigation = () => {
                   setActiveSection(item.id);
                   if (item.children) {
                     toggleSection(item.id);
+                  }
+                  // Handle navigation to settings
+                  if (item.id === 'settings') {
+                    window.location.href = '/settings';
                   }
                 }}
               >
