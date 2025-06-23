@@ -360,7 +360,7 @@ const Navigation = () => {
             <Package className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-lg text-gray-900">Maini Trading</h1>
+            <h1 className="font-bold text-xl text-gray-900">Maini Trading</h1>
           </div>
         </div>
       </div>

@@ -115,6 +115,7 @@ Changelog:
   * Updated branding: Changed company name from "PharmaTech" to "Maini Trading"
   * Updated user profile: Set default user name to "Sunit Kumar Maini"
   * Removed "Distributor Pro" subtitle from navigation header
+  * Increased font size of "Maini Trading" in navigation header for better prominence
 ```
 
 ## User Preferences
