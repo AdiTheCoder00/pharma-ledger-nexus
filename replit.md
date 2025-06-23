@@ -111,6 +111,9 @@ Changelog:
   * Enhanced parties management with suppliers, drug licenses, and credit limits
   * Replaced all "coming soon" placeholders with functional dashboards and analytics
   * Updated navigation highlighting to support new GST compliance section
+  * Fixed reports category with proper route handling and functional dashboards
+  * Updated branding: Changed company name from "PharmaTech" to "Maini Trading"
+  * Updated user profile: Set default user name to "Sunit Kumar Maini"
 ```
 
 ## User Preferences

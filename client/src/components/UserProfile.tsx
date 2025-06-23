@@ -23,9 +23,9 @@ interface UserProfileData {
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<UserProfileData>({
-    userName: 'Pharmacy Admin',
+    userName: 'Sunit Kumar Maini',
     email: '',
-    companyName: '',
+    companyName: 'Maini Trading',
     gstNumber: '',
     phoneNumber: '',
     address: '',

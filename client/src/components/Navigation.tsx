@@ -360,7 +360,7 @@ const Navigation = () => {
             <Package className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-lg text-gray-900">PharmaTech</h1>
+            <h1 className="font-bold text-lg text-gray-900">Maini Trading</h1>
             <p className="text-xs text-gray-500">Distributor Pro</p>
           </div>
         </div>
@@ -373,7 +373,7 @@ const Navigation = () => {
             <UserCheck className="h-4 w-4 text-gray-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">User Name</p>
+            <p className="text-sm font-medium text-gray-900">Sunit Kumar Maini</p>
             <p className="text-xs text-gray-500">Administrator</p>
           </div>
           <Button variant="ghost" size="sm">
