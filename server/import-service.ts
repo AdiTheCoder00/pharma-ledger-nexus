@@ -242,8 +242,82 @@ export class ImportService {
     return { success, errors };
   }
 
+  async importTransactions(busyTransactions: BusyTransactionImport[]): Promise<{ success: number; errors: string[] }> {
+    const success = 0;
+    const errors: string[] = [];
+    
+    // Group transactions by invoice/voucher number to create consolidated records
+    const invoiceMap = new Map<string, any>();
+    
+    for (const transaction of busyTransactions) {
+      try {
+        const invoiceNumber = transaction.invoice_number || transaction.voucher_number || transaction.transaction_number || `TXN-${Date.now()}`;
+        const transactionDate = transaction.transaction_date || transaction.invoice_date || transaction.voucher_date || new Date().toISOString().split('T')[0];
+        const customerName = transaction.party_name || transaction.customer_name || transaction.supplier_name || 'Unknown Customer';
+        const itemName = transaction.item_name || transaction.product_name || transaction.description || 'Unknown Item';
+        
+        if (!invoiceMap.has(invoiceNumber)) {
+          invoiceMap.set(invoiceNumber, {
+            invoiceNumber,
+            date: transactionDate,
+            customerName,
+            customerGst: transaction.party_gst || '',
+            items: [],
+            subtotal: 0,
+            cgst: 0,
+            sgst: 0,
+            igst: 0,
+            totalAmount: 0,
+            paymentStatus: transaction.payment_status || 'pending'
+          });
+        }
+        
+        const invoice = invoiceMap.get(invoiceNumber);
+        const quantity = Number(transaction.quantity) || 1;
+        const rate = Number(transaction.rate || transaction.unit_price) || 0;
+        const discount = Number(transaction.discount || transaction.discount_amount) || 0;
+        const gstRate = Number(transaction.gst_rate || transaction.tax_rate) || 0;
+        const taxableAmount = Number(transaction.taxable_amount) || (quantity * rate - discount);
+        const cgstAmount = Number(transaction.cgst_amount) || 0;
+        const sgstAmount = Number(transaction.sgst_amount) || 0;
+        const igstAmount = Number(transaction.igst_amount) || 0;
+        const totalAmount = Number(transaction.total_amount) || (taxableAmount + cgstAmount + sgstAmount + igstAmount);
+        
+        invoice.items.push({
+          item_name: itemName,
+          batch: transaction.batch || transaction.batch_number || 'BATCH001',
+          hsn_code: transaction.hsn_code || transaction.hsn || '30049000',
+          quantity,
+          rate,
+          discount,
+          gst_rate: gstRate,
+          taxable_amount: taxableAmount,
+          cgst_amount: cgstAmount,
+          sgst_amount: sgstAmount,
+          igst_amount: igstAmount,
+          total_amount: totalAmount
+        });
+        
+        invoice.subtotal += taxableAmount;
+        invoice.cgst += cgstAmount;
+        invoice.sgst += sgstAmount;
+        invoice.igst += igstAmount;
+        invoice.totalAmount += totalAmount;
+        
+      } catch (error) {
+        errors.push(`Transaction processing error: ${error.message}`);
+      }
+    }
+    
+    // Convert grouped transactions to invoices and import them
+    const invoices = Array.from(invoiceMap.values());
+    const result = await this.importInvoices(invoices);
+    
+    return result;
+  }
+
   // Parse XML data to appropriate format
-  async parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices') {
+  async parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices' | 'transactions') {
     const data = [];
     try {
       // Server-side XML parsing using xmldom
@@ -299,7 +373,7 @@ export class ImportService {
   }
 
   // Parse DAT (pipe-delimited) data to appropriate format
-  parseDAT(datContent: string, type: 'customers' | 'stock' | 'invoices') {
+  parseDAT(datContent: string, type: 'customers' | 'stock' | 'invoices' | 'transactions') {
     const lines = datContent.trim().split('\n');
     const headers = lines[0].split('|').map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'));
     const data = [];
@@ -320,7 +394,7 @@ export class ImportService {
   }
 
   // Parse CSV data to appropriate format
-  parseCSV(csvContent: string, type: 'customers' | 'stock' | 'invoices') {
+  parseCSV(csvContent: string, type: 'customers' | 'stock' | 'invoices' | 'transactions') {
     const lines = csvContent.trim().split('\n');
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'));
     const data = [];
@@ -341,7 +415,7 @@ export class ImportService {
   }
 
   // Normalize record data based on type
-  private normalizeRecord(record: any, type: 'customers' | 'stock' | 'invoices'): any {
+  private normalizeRecord(record: any, type: 'customers' | 'stock' | 'invoices' | 'transactions'): any {
 
     // Map common Busy field names to our format
     if (type === 'customers') {
@@ -437,11 +511,12 @@ export class ImportService {
   }
 
   // Generate import template
-  generateTemplate(type: 'customers' | 'stock' | 'invoices') {
+  generateTemplate(type: 'customers' | 'stock' | 'invoices' | 'transactions') {
     const templates = {
       customers: 'customer_name,phone,email,address,gst_number,credit_limit,opening_balance\n"Sample Pharmacy","9876543210","sample@example.com","123 Main St","29ABCDE1234F1Z5","50000","0"',
       stock: 'item_name,manufacturer,category,batch_number,expiry_date,quantity,mrp,purchase_rate,hsn_code,rack_location\n"Paracetamol 500mg","Cipla Ltd","Tablet","PC001","2025-12-31","100","5.00","3.50","30049000","A1"',
-      invoices: 'invoice_number,invoice_date,customer_name,customer_gst,item_name,batch,hsn_code,quantity,rate,discount,gst_rate,taxable_amount,cgst_amount,sgst_amount,igst_amount,total_amount\n"INV001","2024-12-01","Sample Customer","29ABCDE1234F1Z5","Paracetamol","PC001","30049000","10","5.00","0","12","50.00","3.00","3.00","0","56.00"'
+      invoices: 'invoice_number,invoice_date,customer_name,customer_gst,item_name,batch,hsn_code,quantity,rate,discount,gst_rate,taxable_amount,cgst_amount,sgst_amount,igst_amount,total_amount\n"INV001","2024-12-01","Sample Customer","29ABCDE1234F1Z5","Paracetamol","PC001","30049000","10","5.00","0","12","50.00","3.00","3.00","0","56.00"',
+      transactions: 'transaction_number,transaction_type,transaction_date,party_name,party_gst,item_name,batch,hsn_code,quantity,rate,discount,gst_rate,taxable_amount,cgst_amount,sgst_amount,igst_amount,total_amount,payment_status\n"TXN001","sale","2024-12-01","Sample Customer","29ABCDE1234F1Z5","Paracetamol","PC001","30049000","10","5.00","0","12","50.00","3.00","3.00","0","56.00","paid"'
     };
     
     return templates[type];

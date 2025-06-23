@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Upload, Download, FileText, Users, Package, Receipt, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Download, FileText, Users, Package, Receipt, ArrowRightLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 
 interface ImportResult {
@@ -210,10 +210,11 @@ export default function DataImport() {
         </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="stock">Stock Items</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="transactions">Transactions</TabsTrigger>
           </TabsList>
 
           <TabsContent value="customers">
@@ -251,6 +252,20 @@ export default function DataImport() {
               templateFields={[
                 'invoice_number', 'invoice_date', 'customer_name', 'item_name',
                 'quantity', 'rate', 'gst_rate', 'taxable_amount', 'total_amount'
+              ]}
+            />
+          </TabsContent>
+
+          <TabsContent value="transactions">
+            <ImportSection
+              type="transactions"
+              title="Transactions"
+              description="Import all transaction data including sales, purchases, and returns"
+              icon={ArrowRightLeft}
+              templateFields={[
+                'transaction_number', 'transaction_type', 'transaction_date', 'party_name',
+                'item_name', 'quantity', 'rate', 'gst_rate', 'amount', 'cgst_amount',
+                'sgst_amount', 'igst_amount', 'total_amount', 'payment_status'
               ]}
             />
           </TabsContent>

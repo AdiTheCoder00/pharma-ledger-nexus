@@ -181,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { importService } = await import("./import-service");
       const { type } = req.params;
       
-      if (!['customers', 'stock', 'invoices'].includes(type)) {
+      if (!['customers', 'stock', 'invoices', 'transactions'].includes(type)) {
         return res.status(400).json({ error: "Invalid template type" });
       }
 
