@@ -322,6 +322,9 @@ const Navigation = () => {
       case "gst-audit-trail":
         navigate("/gst-compliance/gst-audit-trail");
         break;
+      case "data-import":
+        navigate("/data-import");
+        break;
       default:
         navigate("/");
     }
