@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Plus, Search, Filter, Download, Edit, Trash2, AlertTriangle, Calendar, Settings } from 'lucide-react';
 import AddStockItemModal from '@/components/modals/AddStockItemModal';
-import { dataStore } from '@/store/dataStore';
 import { StockItem } from '@/types';
 import { toast } from "@/components/ui/sonner";
 

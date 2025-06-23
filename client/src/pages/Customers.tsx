@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Users, Plus, Search, Download, Edit, Trash2, Phone, Mail, MapPin, FileText, CreditCard } from 'lucide-react';
 import AddCustomerModal from '@/components/modals/AddCustomerModal';
-import { dataStore } from '@/store/dataStore';
 import { Customer } from '@/types';
 import { toast } from "@/components/ui/sonner";
 
