@@ -27,6 +27,44 @@ export interface BusyStockImport {
   rack_location?: string;
 }
 
+export interface BusyTransactionImport {
+  transaction_number?: string;
+  invoice_number?: string;
+  voucher_number?: string;
+  transaction_type?: string; // sale, purchase, sale_return, purchase_return, debit_note, credit_note
+  transaction_date?: string;
+  invoice_date?: string;
+  voucher_date?: string;
+  party_name?: string;
+  customer_name?: string;
+  supplier_name?: string;
+  party_gst?: string;
+  reference_number?: string;
+  item_name?: string;
+  product_name?: string;
+  description?: string;
+  batch?: string;
+  batch_number?: string;
+  hsn_code?: string;
+  hsn?: string;
+  quantity?: number;
+  rate?: number;
+  unit_price?: number;
+  discount?: number;
+  discount_amount?: number;
+  gst_rate?: number;
+  tax_rate?: number;
+  taxable_amount?: number;
+  amount?: number;
+  cgst_amount?: number;
+  sgst_amount?: number;
+  igst_amount?: number;
+  total_amount?: number;
+  payment_status?: string;
+  remarks?: string;
+  narration?: string;
+}
+
 export interface BusyInvoiceImport {
   invoice_number: string;
   invoice_date: string;
@@ -217,7 +255,8 @@ export class ImportService {
       const selectors = {
         customers: ['Customer', 'Party', 'Account', 'Ledger'],
         stock: ['Item', 'Product', 'Stock', 'Inventory'],
-        invoices: ['Invoice', 'Bill', 'Transaction', 'Voucher']
+        invoices: ['Invoice', 'Bill', 'SaleInvoice'],
+        transactions: ['Transaction', 'Voucher', 'Entry', 'Sale', 'Purchase', 'Return', 'Note']
       };
 
       // Try different element selectors
@@ -328,6 +367,29 @@ export class ImportService {
         hsn_code: record.hsn_code || record.hsn || record.hsncode || record.servicecode || record.hsn_sac,
         rack_location: record.rack_location || record.location || record.binlocation || record.rack,
       };
+    } else if (type === 'transactions') {
+      return {
+        transaction_number: record.transaction_number || record.invoice_number || record.voucher_number || record.invoice_no || record.bill_no || record.voucherno,
+        transaction_type: record.transaction_type || record.voucher_type || record.type || 'sale',
+        transaction_date: record.transaction_date || record.invoice_date || record.voucher_date || record.date || record.billdate,
+        party_name: record.party_name || record.customer_name || record.supplier_name || record.partyname || record.buyername || record.sellername,
+        party_gst: record.party_gst || record.customer_gst || record.supplier_gst || record.partygstin || record.buyergstin,
+        reference_number: record.reference_number || record.ref_no || record.referenceno,
+        item_name: record.item_name || record.product_name || record.itemname || record.productname || record.description,
+        batch: record.batch || record.batch_number || record.batchno,
+        hsn_code: record.hsn_code || record.hsn || record.hsncode,
+        quantity: parseInt(record.quantity || record.qty || '1'),
+        rate: parseFloat(record.rate || record.price || record.unit_price || record.unitprice || '0'),
+        discount: parseFloat(record.discount || record.discount_amount || record.discountamount || '0'),
+        gst_rate: parseFloat(record.gst_rate || record.tax_rate || record.gstrate || record.taxrate || '0'),
+        taxable_amount: parseFloat(record.taxable_amount || record.taxable_value || record.taxableamount || record.amount || '0'),
+        cgst_amount: parseFloat(record.cgst_amount || record.cgst || record.cgstamount || '0'),
+        sgst_amount: parseFloat(record.sgst_amount || record.sgst || record.sgstamount || '0'),
+        igst_amount: parseFloat(record.igst_amount || record.igst || record.igstamount || '0'),
+        total_amount: parseFloat(record.total_amount || record.total || record.totalamount || record.billamount || record.amount || '0'),
+        payment_status: record.payment_status || record.status || 'pending',
+        remarks: record.remarks || record.narration || record.notes,
+      };
     } else if (type === 'invoices') {
       return {
         invoice_number: record.invoice_number || record.invoice_no || record.bill_no || record.billno || record.voucherno,
@@ -351,7 +413,7 @@ export class ImportService {
   }
 
   // Auto-detect file format and parse accordingly
-  async parseFile(fileContent: string, type: 'customers' | 'stock' | 'invoices', format?: string) {
+  async parseFile(fileContent: string, type: 'customers' | 'stock' | 'invoices' | 'transactions', format?: string) {
     if (!format) {
       // Auto-detect format
       if (fileContent.trim().startsWith('<?xml') || fileContent.includes('<')) {

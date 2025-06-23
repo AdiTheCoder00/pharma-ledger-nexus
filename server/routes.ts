@@ -139,6 +139,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/import/transactions", async (req, res) => {
+    try {
+      const { importService } = await import("./import-service");
+      const { fileData, format } = req.body;
+      
+      if (!fileData) {
+        return res.status(400).json({ error: "File data is required" });
+      }
+
+      const transactions = await importService.parseFile(fileData, 'transactions', format);
+      const result = await importService.importTransactions(transactions);
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing transactions:", error);
+      res.status(500).json({ error: "Failed to import transactions: " + error.message });
+    }
+  });
+
   app.post("/api/import/invoices", async (req, res) => {
     try {
       const { importService } = await import("./import-service");
