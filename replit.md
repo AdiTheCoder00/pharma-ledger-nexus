@@ -125,6 +125,13 @@ Changelog:
   * Added support for all transaction types (sales, purchases, returns)
   * Created transaction template generation with proper field mapping
   * Set up PostgreSQL database with all required tables for production use
+- June 23, 2025. Added dedicated Transactions page:
+  * Added "Transactions" section to main navigation menu
+  * Created comprehensive Transactions dashboard with summary cards
+  * Implemented filtering by payment status (paid/pending/partial) and type (B2B/B2C)
+  * Added search functionality for invoice numbers and customer names
+  * Fixed API endpoint to properly retrieve sales invoice data from database
+  * Added proper error handling for numeric values in transaction display
 ```
 
 ## User Preferences
