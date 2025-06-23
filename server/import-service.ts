@@ -208,7 +208,8 @@ export class ImportService {
   parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices'): any[] {
     const data = [];
     try {
-      // Simple XML parsing for common Busy Accounting XML formats
+      // Server-side XML parsing using built-in XML parser
+      const { DOMParser } = require('@xmldom/xmldom');
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
       
