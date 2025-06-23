@@ -15,22 +15,42 @@ interface ImportResult {
 }
 
 export default function DataImport() {
-  const [csvData, setCsvData] = useState('');
+  const [fileData, setFileData] = useState('');
+  const [fileFormat, setFileFormat] = useState('');
+  const [fileName, setFileName] = useState('');
   const [importResults, setImportResults] = useState<ImportResult | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [activeTab, setActiveTab] = useState('customers');
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === 'text/csv') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        setCsvData(content);
-      };
-      reader.readAsText(file);
-    } else {
-      alert('Please select a CSV file');
+    if (file) {
+      const allowedTypes = ['text/csv', 'application/xml', 'text/xml', 'text/plain'];
+      const allowedExtensions = ['.csv', '.xml', '.dat', '.txt'];
+      
+      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+      const isValidType = allowedTypes.includes(file.type) || allowedExtensions.includes(fileExtension);
+      
+      if (isValidType) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          setFileData(content);
+          setFileName(file.name);
+          
+          // Auto-detect format based on file extension or content
+          if (fileExtension === '.xml' || content.trim().startsWith('<?xml')) {
+            setFileFormat('xml');
+          } else if (fileExtension === '.dat' || content.includes('|')) {
+            setFileFormat('dat');
+          } else {
+            setFileFormat('csv');
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        alert('Please select a CSV, XML, or DAT file');
+      }
     }
   };
 
@@ -50,8 +70,8 @@ export default function DataImport() {
   };
 
   const importData = async (type: string) => {
-    if (!csvData.trim()) {
-      alert('Please upload a CSV file first');
+    if (!fileData.trim()) {
+      alert('Please upload a file first');
       return;
     }
 
@@ -64,7 +84,7 @@ export default function DataImport() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ csvData }),
+        body: JSON.stringify({ fileData, format: fileFormat }),
       });
 
       const result = await response.json();
@@ -122,7 +142,7 @@ export default function DataImport() {
           </Button>
           <Button
             onClick={() => importData(type)}
-            disabled={isImporting || !csvData}
+            disabled={isImporting || !fileData}
             className="flex items-center gap-2"
           >
             <Upload className="h-4 w-4" />
@@ -149,28 +169,29 @@ export default function DataImport() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Upload CSV File</CardTitle>
+            <CardTitle>Upload Data File</CardTitle>
             <p className="text-sm text-gray-600">
-              Select a CSV file exported from Busy Accounting or other accounting software
+              Select a CSV, XML, or DAT file exported from Busy Accounting or other accounting software
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="csvFile">CSV File</Label>
+                <Label htmlFor="dataFile">Data File (CSV, XML, DAT)</Label>
                 <Input
-                  id="csvFile"
+                  id="dataFile"
                   type="file"
-                  accept=".csv"
+                  accept=".csv,.xml,.dat,.txt"
                   onChange={handleFileUpload}
                   className="mt-1"
                 />
               </div>
-              {csvData && (
+              {fileData && (
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    CSV file loaded successfully. {csvData.split('\n').length - 1} rows detected.
+                    File "{fileName}" loaded successfully ({fileFormat.toUpperCase()} format). 
+                    {fileData.split('\n').length - 1} lines detected.
                   </AlertDescription>
                 </Alert>
               )}
@@ -284,17 +305,18 @@ export default function DataImport() {
                   <li>Open Busy Accounting software</li>
                   <li>Go to Reports &gt; Export Data</li>
                   <li>Select the required master/transaction</li>
-                  <li>Choose CSV format and export</li>
-                  <li>Upload the CSV file here</li>
+                  <li>Choose CSV, XML, or DAT format and export</li>
+                  <li>Upload the exported file here</li>
                 </ol>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Data Mapping:</h4>
+                <h4 className="font-medium mb-2">Supported Formats:</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Customer GST numbers determine B2B/B2C classification</li>
-                  <li>• HSN codes are mapped to pharmaceutical standards</li>
-                  <li>• Invoice data creates GSTR-1 ready transactions</li>
-                  <li>• Duplicate entries are automatically skipped</li>
+                  <li>• <strong>CSV:</strong> Comma-separated values (standard format)</li>
+                  <li>• <strong>XML:</strong> Structured XML data from Busy exports</li>
+                  <li>• <strong>DAT:</strong> Pipe-delimited data files</li>
+                  <li>• Auto-detection based on file content and extension</li>
+                  <li>• Flexible field mapping for different naming conventions</li>
                 </ul>
               </div>
             </div>

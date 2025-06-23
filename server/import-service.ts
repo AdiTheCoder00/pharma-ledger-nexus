@@ -204,6 +204,67 @@ export class ImportService {
     return { success, errors };
   }
 
+  // Parse XML data to appropriate format
+  parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices'): any[] {
+    const data = [];
+    try {
+      // Simple XML parsing for common Busy Accounting XML formats
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+      
+      let records: NodeList;
+      if (type === 'customers') {
+        records = xmlDoc.querySelectorAll('Customer, Party, Account');
+      } else if (type === 'stock') {
+        records = xmlDoc.querySelectorAll('Item, Product, Stock');
+      } else {
+        records = xmlDoc.querySelectorAll('Invoice, Bill, Transaction');
+      }
+
+      records.forEach((record: Element) => {
+        const item: any = {};
+        
+        // Extract data from XML attributes and child elements
+        Array.from(record.attributes).forEach(attr => {
+          const key = attr.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          item[key] = attr.value;
+        });
+        
+        Array.from(record.children).forEach(child => {
+          const key = child.tagName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          item[key] = child.textContent || child.getAttribute('value') || '';
+        });
+        
+        data.push(this.normalizeRecord(item, type));
+      });
+    } catch (error) {
+      throw new Error(`XML parsing failed: ${error.message}`);
+    }
+    
+    return data;
+  }
+
+  // Parse DAT (pipe-delimited) data to appropriate format
+  parseDAT(datContent: string, type: 'customers' | 'stock' | 'invoices'): any[] {
+    const lines = datContent.trim().split('\n');
+    const headers = lines[0].split('|').map(h => h.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'));
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split('|');
+      const record: any = {};
+      
+      headers.forEach((header, index) => {
+        const value = values[index]?.trim().replace(/['"]/g, '');
+        record[header] = value;
+      });
+
+      data.push(this.normalizeRecord(record, type));
+    }
+
+    return data;
+  }
+
   // Parse CSV data to appropriate format
   parseCSV(csvContent: string, type: 'customers' | 'stock' | 'invoices'): any[] {
     const lines = csvContent.trim().split('\n');
@@ -219,53 +280,84 @@ export class ImportService {
         record[header] = value;
       });
 
-      // Map common Busy field names to our format
-      if (type === 'customers') {
-        data.push({
-          customer_name: record.customer_name || record.name || record.party_name,
-          phone: record.phone || record.mobile || record.contact,
-          email: record.email,
-          address: record.address || 'Imported Address',
-          gst_number: record.gst_number || record.gstin || record.gst_no,
-          credit_limit: parseFloat(record.credit_limit || record.credit || '0'),
-          opening_balance: parseFloat(record.opening_balance || record.balance || '0'),
-        });
-      } else if (type === 'stock') {
-        data.push({
-          item_name: record.item_name || record.name || record.product_name,
-          manufacturer: record.manufacturer || record.company,
-          category: record.category || record.group,
-          batch_number: record.batch_number || record.batch,
-          expiry_date: record.expiry_date || record.expiry,
-          quantity: parseInt(record.quantity || record.stock || '0'),
-          mrp: parseFloat(record.mrp || record.selling_price || '0'),
-          purchase_rate: parseFloat(record.purchase_rate || record.cost_price || '0'),
-          hsn_code: record.hsn_code || record.hsn,
-          rack_location: record.rack_location || record.location,
-        });
-      } else if (type === 'invoices') {
-        data.push({
-          invoice_number: record.invoice_number || record.invoice_no || record.bill_no,
-          invoice_date: record.invoice_date || record.date,
-          customer_name: record.customer_name || record.party_name,
-          customer_gst: record.customer_gst || record.party_gstin,
-          item_name: record.item_name || record.product_name,
-          batch: record.batch,
-          hsn_code: record.hsn_code || record.hsn,
-          quantity: parseInt(record.quantity || '1'),
-          rate: parseFloat(record.rate || record.price || '0'),
-          discount: parseFloat(record.discount || '0'),
-          gst_rate: parseFloat(record.gst_rate || '12'),
-          taxable_amount: parseFloat(record.taxable_amount || record.taxable_value || '0'),
-          cgst_amount: parseFloat(record.cgst_amount || record.cgst || '0'),
-          sgst_amount: parseFloat(record.sgst_amount || record.sgst || '0'),
-          igst_amount: parseFloat(record.igst_amount || record.igst || '0'),
-          total_amount: parseFloat(record.total_amount || record.total || '0'),
-        });
-      }
+      data.push(this.normalizeRecord(record, type));
     }
 
     return data;
+  }
+
+  // Normalize record data based on type
+  private normalizeRecord(record: any, type: 'customers' | 'stock' | 'invoices'): any {
+
+    // Map common Busy field names to our format
+    if (type === 'customers') {
+      return {
+        customer_name: record.customer_name || record.name || record.party_name || record.accountname || record.ledgername,
+        phone: record.phone || record.mobile || record.contact || record.mobileno,
+        email: record.email || record.emailid,
+        address: record.address || record.mailingaddress || 'Imported Address',
+        gst_number: record.gst_number || record.gstin || record.gst_no || record.gstnumber || record.vatno,
+        credit_limit: parseFloat(record.credit_limit || record.credit || record.creditlimit || '0'),
+        opening_balance: parseFloat(record.opening_balance || record.balance || record.openingbalance || '0'),
+      };
+    } else if (type === 'stock') {
+      return {
+        item_name: record.item_name || record.name || record.product_name || record.itemname || record.description,
+        manufacturer: record.manufacturer || record.company || record.brand,
+        category: record.category || record.group || record.itemgroup,
+        batch_number: record.batch_number || record.batch || record.batchno,
+        expiry_date: record.expiry_date || record.expiry || record.expirydate,
+        quantity: parseInt(record.quantity || record.stock || record.qty || record.closingstock || '0'),
+        mrp: parseFloat(record.mrp || record.selling_price || record.saleprice || record.retailprice || '0'),
+        purchase_rate: parseFloat(record.purchase_rate || record.cost_price || record.purchaseprice || record.costprice || '0'),
+        hsn_code: record.hsn_code || record.hsn || record.hsncode || record.servicecode,
+        rack_location: record.rack_location || record.location || record.binlocation,
+      };
+    } else if (type === 'invoices') {
+      return {
+        invoice_number: record.invoice_number || record.invoice_no || record.bill_no || record.billno || record.voucherno,
+        invoice_date: record.invoice_date || record.date || record.billdate || record.voucherdate,
+        customer_name: record.customer_name || record.party_name || record.partyname || record.buyername,
+        customer_gst: record.customer_gst || record.party_gstin || record.partygstin || record.buyergstin,
+        item_name: record.item_name || record.product_name || record.itemname || record.productname,
+        batch: record.batch || record.batchno,
+        hsn_code: record.hsn_code || record.hsn || record.hsncode,
+        quantity: parseInt(record.quantity || record.qty || '1'),
+        rate: parseFloat(record.rate || record.price || record.unitprice || '0'),
+        discount: parseFloat(record.discount || record.discountamount || '0'),
+        gst_rate: parseFloat(record.gst_rate || record.gstrate || record.taxrate || '12'),
+        taxable_amount: parseFloat(record.taxable_amount || record.taxable_value || record.taxableamount || '0'),
+        cgst_amount: parseFloat(record.cgst_amount || record.cgst || record.cgstamount || '0'),
+        sgst_amount: parseFloat(record.sgst_amount || record.sgst || record.sgstamount || '0'),
+        igst_amount: parseFloat(record.igst_amount || record.igst || record.igstamount || '0'),
+        total_amount: parseFloat(record.total_amount || record.total || record.totalamount || record.billamount || '0'),
+      };
+    }
+  }
+
+  // Auto-detect file format and parse accordingly
+  parseFile(fileContent: string, type: 'customers' | 'stock' | 'invoices', format?: string): any[] {
+    if (!format) {
+      // Auto-detect format
+      if (fileContent.trim().startsWith('<?xml') || fileContent.includes('<')) {
+        format = 'xml';
+      } else if (fileContent.includes('|')) {
+        format = 'dat';
+      } else {
+        format = 'csv';
+      }
+    }
+
+    switch (format.toLowerCase()) {
+      case 'xml':
+        return this.parseXML(fileContent, type);
+      case 'dat':
+        return this.parseDAT(fileContent, type);
+      case 'csv':
+      default:
+        return this.parseCSV(fileContent, type);
+    }
+  }
   }
 
   // Generate import template

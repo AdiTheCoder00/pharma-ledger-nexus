@@ -104,54 +104,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/import/customers", async (req, res) => {
     try {
       const { importService } = await import("./import-service");
-      const { csvData } = req.body;
+      const { fileData, format } = req.body;
       
-      if (!csvData) {
-        return res.status(400).json({ error: "CSV data is required" });
+      if (!fileData) {
+        return res.status(400).json({ error: "File data is required" });
       }
 
-      const customers = importService.parseCSV(csvData, 'customers');
+      const customers = importService.parseFile(fileData, 'customers', format);
       const result = await importService.importCustomers(customers);
       res.json(result);
     } catch (error) {
       console.error("Error importing customers:", error);
-      res.status(500).json({ error: "Failed to import customers" });
+      res.status(500).json({ error: "Failed to import customers: " + error.message });
     }
   });
 
   app.post("/api/import/stock", async (req, res) => {
     try {
       const { importService } = await import("./import-service");
-      const { csvData } = req.body;
+      const { fileData, format } = req.body;
       
-      if (!csvData) {
-        return res.status(400).json({ error: "CSV data is required" });
+      if (!fileData) {
+        return res.status(400).json({ error: "File data is required" });
       }
 
-      const stockItems = importService.parseCSV(csvData, 'stock');
+      const stockItems = importService.parseFile(fileData, 'stock', format);
       const result = await importService.importStockItems(stockItems);
       res.json(result);
     } catch (error) {
       console.error("Error importing stock items:", error);
-      res.status(500).json({ error: "Failed to import stock items" });
+      res.status(500).json({ error: "Failed to import stock items: " + error.message });
     }
   });
 
   app.post("/api/import/invoices", async (req, res) => {
     try {
       const { importService } = await import("./import-service");
-      const { csvData } = req.body;
+      const { fileData, format } = req.body;
       
-      if (!csvData) {
-        return res.status(400).json({ error: "CSV data is required" });
+      if (!fileData) {
+        return res.status(400).json({ error: "File data is required" });
       }
 
-      const invoices = importService.parseCSV(csvData, 'invoices');
+      const invoices = importService.parseFile(fileData, 'invoices', format);
       const result = await importService.importInvoices(invoices);
       res.json(result);
     } catch (error) {
       console.error("Error importing invoices:", error);
-      res.status(500).json({ error: "Failed to import invoices" });
+      res.status(500).json({ error: "Failed to import invoices: " + error.message });
     }
   });
 
