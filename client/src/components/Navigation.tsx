@@ -196,6 +196,8 @@ const Navigation = () => {
       setExpandedSections((prev) =>
         prev.includes("gst-compliance") ? prev : [...prev, "gst-compliance"],
       );
+    } else if (path === "/data-import") {
+      setActiveSection("data-import");
     }
   }, [location.pathname]);
 
@@ -411,8 +413,14 @@ const Navigation = () => {
       ],
     },
     {
+      id: "data-import",
+      label: "Data Import",
+      icon: FileText,
+      active: activeSection === "data-import",
+    },
+    {
       id: "settings",
-      label: "Settings",
+      label: "Settings", 
       icon: Settings,
       active: activeSection === "settings",
     },

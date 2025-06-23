@@ -100,6 +100,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import data from Busy Accounting
+  app.post("/api/import/customers", async (req, res) => {
+    try {
+      const { importService } = await import("./import-service");
+      const { csvData } = req.body;
+      
+      if (!csvData) {
+        return res.status(400).json({ error: "CSV data is required" });
+      }
+
+      const customers = importService.parseCSV(csvData, 'customers');
+      const result = await importService.importCustomers(customers);
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing customers:", error);
+      res.status(500).json({ error: "Failed to import customers" });
+    }
+  });
+
+  app.post("/api/import/stock", async (req, res) => {
+    try {
+      const { importService } = await import("./import-service");
+      const { csvData } = req.body;
+      
+      if (!csvData) {
+        return res.status(400).json({ error: "CSV data is required" });
+      }
+
+      const stockItems = importService.parseCSV(csvData, 'stock');
+      const result = await importService.importStockItems(stockItems);
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing stock items:", error);
+      res.status(500).json({ error: "Failed to import stock items" });
+    }
+  });
+
+  app.post("/api/import/invoices", async (req, res) => {
+    try {
+      const { importService } = await import("./import-service");
+      const { csvData } = req.body;
+      
+      if (!csvData) {
+        return res.status(400).json({ error: "CSV data is required" });
+      }
+
+      const invoices = importService.parseCSV(csvData, 'invoices');
+      const result = await importService.importInvoices(invoices);
+      res.json(result);
+    } catch (error) {
+      console.error("Error importing invoices:", error);
+      res.status(500).json({ error: "Failed to import invoices" });
+    }
+  });
+
+  // Get import templates
+  app.get("/api/import/template/:type", async (req, res) => {
+    try {
+      const { importService } = await import("./import-service");
+      const { type } = req.params;
+      
+      if (!['customers', 'stock', 'invoices'].includes(type)) {
+        return res.status(400).json({ error: "Invalid template type" });
+      }
+
+      const template = importService.generateTemplate(type as any);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=${type}_template.csv`);
+      res.send(template);
+    } catch (error) {
+      console.error("Error generating template:", error);
+      res.status(500).json({ error: "Failed to generate template" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

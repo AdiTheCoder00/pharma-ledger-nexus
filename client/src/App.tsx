@@ -10,6 +10,7 @@ import StockItems from "./pages/StockItems";
 import SalesInvoice from "./pages/SalesInvoice";
 import Customers from "./pages/Customers";
 import GSTR1Dashboard from "./pages/GSTR1Dashboard";
+import DataImport from "./pages/DataImport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
           <Route path="/gst-compliance/gstr3b-filing" element={<Settings />} />
           <Route path="/gst-compliance/hsn-summary" element={<GSTR1Dashboard />} />
           <Route path="/gst-compliance/gst-audit-trail" element={<Settings />} />
+          <Route path="/data-import" element={<DataImport />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
