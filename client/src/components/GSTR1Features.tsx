@@ -1,11 +1,8 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -18,26 +15,170 @@ import {
   CheckCircle, 
   AlertCircle,
   BarChart3,
-  Filter,
-  Search,
   RefreshCw
 } from 'lucide-react';
 import { format } from "date-fns";
+import { dataStore } from '@/store/dataStore';
+import { toast } from "@/components/ui/sonner";
 
 const GSTR1Features = () => {
-  const [selectedMonth, setSelectedMonth] = useState<Date>();
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState('2024');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [gstrData, setGstrData] = useState<any>(null);
+
+  useEffect(() => {
+    generateGSTRData();
+  }, [selectedMonth, selectedYear]);
+
+  const generateGSTRData = () => {
+    const invoices = dataStore.getSalesInvoices();
+    const customers = dataStore.getCustomers();
+    
+    const filteredInvoices = invoices.filter(invoice => {
+      const invoiceDate = new Date(invoice.date);
+      const selectedDate = selectedMonth || new Date();
+      return invoiceDate.getMonth() === selectedDate.getMonth() && 
+             invoiceDate.getFullYear() === parseInt(selectedYear);
+    });
+
+    const b2bInvoices = filteredInvoices.filter(invoice => {
+      const customer = customers.find(c => c.id === invoice.customerId);
+      return customer?.gstNumber;
+    });
+
+    const b2cInvoices = filteredInvoices.filter(invoice => {
+      const customer = customers.find(c => c.id === invoice.customerId);
+      return !customer?.gstNumber;
+    });
+
+    const b2cLargeInvoices = b2cInvoices.filter(invoice => invoice.totalAmount > 250000);
+    const b2cSmallInvoices = b2cInvoices.filter(invoice => invoice.totalAmount <= 250000);
+
+    const b2bTotal = b2bInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+    const b2cLargeTotal = b2cLargeInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+    const b2cSmallTotal = b2cSmallInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+
+    const totalCGST = filteredInvoices.reduce((sum, inv) => sum + inv.cgst, 0);
+    const totalSGST = filteredInvoices.reduce((sum, inv) => sum + inv.sgst, 0);
+    const totalIGST = filteredInvoices.reduce((sum, inv) => sum + inv.igst, 0);
+
+    setGstrData({
+      b2b: { count: b2bInvoices.length, amount: b2bTotal, invoices: b2bInvoices },
+      b2cs: { count: b2cSmallInvoices.length, amount: b2cSmallTotal, invoices: b2cSmallInvoices },
+      b2cl: { count: b2cLargeInvoices.length, amount: b2cLargeTotal, invoices: b2cLargeInvoices },
+      exp: { count: 0, amount: 0, invoices: [] },
+      cdnr: { count: 0, amount: 0, invoices: [] },
+      cdnur: { count: 0, amount: 0, invoices: [] },
+      hsn: { count: filteredInvoices.length, amount: b2bTotal + b2cLargeTotal + b2cSmallTotal },
+      totals: {
+        cgst: totalCGST,
+        sgst: totalSGST,
+        igst: totalIGST,
+        totalTax: totalCGST + totalSGST + totalIGST,
+        totalTurnover: b2bTotal + b2cLargeTotal + b2cSmallTotal
+      }
+    });
+  };
+
+  const exportGSTR1JSON = () => {
+    if (!gstrData) {
+      toast.error("No data available for export");
+      return;
+    }
+
+    const gstr1Export = {
+      version: "GST3.0.4",
+      hash: "hash",
+      gstin: "22AAAAA0000A1Z5",
+      fp: format(selectedMonth, "MM") + selectedYear.slice(-2),
+      gt: gstrData.totals.totalTurnover,
+      cur_gt: gstrData.totals.totalTurnover,
+      b2b: gstrData.b2b.invoices.map((invoice: any) => ({
+        ctin: "22AAAAA0000A1Z5",
+        inv: [{
+          inum: invoice.invoiceNumber,
+          idt: invoice.date,
+          val: invoice.totalAmount,
+          pos: "22",
+          rchrg: "N",
+          etin: "",
+          itms: invoice.items.map((item: any) => ({
+            num: 1,
+            itm_det: {
+              rt: item.gstRate,
+              txval: item.amount - (item.amount * item.gstRate / (100 + item.gstRate)),
+              iamt: 0,
+              camt: item.amount * item.gstRate / (200 + 2 * item.gstRate),
+              samt: item.amount * item.gstRate / (200 + 2 * item.gstRate),
+              csamt: 0
+            }
+          }))
+        }]
+      })),
+      hsn: {
+        data: [{
+          num: 1,
+          hsn_sc: "30049099",
+          desc: "Pharmaceutical Products",
+          uqc: "NOS",
+          qty: 1,
+          val: gstrData.totals.totalTurnover,
+          txval: gstrData.totals.totalTurnover * 0.85,
+          iamt: 0,
+          camt: gstrData.totals.cgst,
+          samt: gstrData.totals.sgst,
+          csamt: 0
+        }]
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(gstr1Export, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `GSTR1_${format(selectedMonth, "MM")}_${selectedYear}.json`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success("GSTR-1 JSON exported successfully!");
+  };
+
+  const exportGSTR1Excel = () => {
+    if (!gstrData) {
+      toast.error("No data available for export");
+      return;
+    }
+
+    const csvContent = [
+      ['Section', 'Type', 'Invoice Number', 'Date', 'Customer', 'GSTIN', 'Amount', 'CGST', 'SGST', 'IGST'].join(','),
+      ...gstrData.b2b.invoices.map((inv: any) => [
+        'B2B', 'Invoice', inv.invoiceNumber, inv.date, inv.customerName, 'GSTIN', inv.totalAmount, inv.cgst, inv.sgst, inv.igst
+      ].join(',')),
+      ...gstrData.b2cs.invoices.map((inv: any) => [
+        'B2C Small', 'Invoice', inv.invoiceNumber, inv.date, inv.customerName, '', inv.totalAmount, inv.cgst, inv.sgst, inv.igst
+      ].join(',')),
+      ...gstrData.b2cl.invoices.map((inv: any) => [
+        'B2C Large', 'Invoice', inv.invoiceNumber, inv.date, inv.customerName, '', inv.totalAmount, inv.cgst, inv.sgst, inv.igst
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `GSTR1_${format(selectedMonth, "MM")}_${selectedYear}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success("GSTR-1 Excel export completed!");
+  };
 
   const gstr1Sections = [
-    { id: 'b2b', name: 'B2B Supplies', count: 0, amount: '₹0' },
-    { id: 'b2cs', name: 'B2C (Small) Supplies', count: 0, amount: '₹0' },
-    { id: 'b2cl', name: 'B2C (Large) Supplies', count: 0, amount: '₹0' },
+    { id: 'b2b', name: 'B2B Supplies', count: gstrData?.b2b.count || 0, amount: `₹${(gstrData?.b2b.amount || 0).toLocaleString()}` },
+    { id: 'b2cs', name: 'B2C (Small) Supplies', count: gstrData?.b2cs.count || 0, amount: `₹${(gstrData?.b2cs.amount || 0).toLocaleString()}` },
+    { id: 'b2cl', name: 'B2C (Large) Supplies', count: gstrData?.b2cl.count || 0, amount: `₹${(gstrData?.b2cl.amount || 0).toLocaleString()}` },
     { id: 'exp', name: 'Exports', count: 0, amount: '₹0' },
     { id: 'cdnr', name: 'Credit/Debit Notes (Registered)', count: 0, amount: '₹0' },
     { id: 'cdnur', name: 'Credit/Debit Notes (Unregistered)', count: 0, amount: '₹0' },
-    { id: 'hsn', name: 'HSN Summary', count: 0, amount: '₹0' }
+    { id: 'hsn', name: 'HSN Summary', count: gstrData?.hsn.count || 0, amount: `₹${(gstrData?.hsn.amount || 0).toLocaleString()}` }
   ];
 
   return (
@@ -62,7 +203,6 @@ const GSTR1Features = () => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              {/* Period Selection */}
               <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                 <div className="space-y-2">
                   <Label>Return Period</Label>
@@ -89,7 +229,7 @@ const GSTR1Features = () => {
                         <Calendar
                           mode="single"
                           selected={selectedMonth}
-                          onSelect={setSelectedMonth}
+                          onSelect={(date) => date && setSelectedMonth(date)}
                           initialFocus
                         />
                       </PopoverContent>
@@ -98,168 +238,106 @@ const GSTR1Features = () => {
                 </div>
 
                 <div className="flex space-x-2">
-                  <Button>
+                  <Button variant="outline" size="sm" onClick={generateGSTRData}>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh Data
+                    Refresh
                   </Button>
-                  <Button variant="outline">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Generate Preview
+                  <Button variant="outline" size="sm" onClick={exportGSTR1JSON}>
+                    <Download className="h-4 w-4 mr-2" />
+                    JSON
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={exportGSTR1Excel}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Excel
                   </Button>
                 </div>
               </div>
 
-              {/* GSTR1 Sections */}
+              {gstrData && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Total Turnover</div>
+                      <div className="text-2xl font-bold">₹{gstrData.totals.totalTurnover.toLocaleString()}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Total GST</div>
+                      <div className="text-2xl font-bold">₹{gstrData.totals.totalTax.toLocaleString()}</div>
+                      <div className="text-xs text-gray-500">
+                        CGST: ₹{gstrData.totals.cgst.toLocaleString()} | SGST: ₹{gstrData.totals.sgst.toLocaleString()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Filing Status</div>
+                      <div className="flex items-center space-x-2">
+                        <AlertCircle className="h-4 w-4 text-orange-500" />
+                        <span className="text-sm">Pending</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {gstr1Sections.map((section) => (
                   <Card key={section.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium">{section.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-2xl font-bold">{section.count}</p>
-                          <p className="text-sm text-gray-600">Invoices</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-semibold text-green-600">{section.amount}</p>
-                          <p className="text-sm text-gray-600">Amount</p>
-                        </div>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-sm">{section.name}</h3>
+                        <Badge variant="outline">{section.count}</Badge>
                       </div>
+                      <div className="text-xl font-bold text-blue-600">{section.amount}</div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-
-              {/* Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Return Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600">Total Taxable Value</p>
-                      <p className="text-2xl font-bold">₹0</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600">Total CGST</p>
-                      <p className="text-2xl font-bold text-blue-600">₹0</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600">Total SGST</p>
-                      <p className="text-2xl font-bold text-blue-600">₹0</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600">Total IGST</p>
-                      <p className="text-2xl font-bold text-blue-600">₹0</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             <TabsContent value="filing" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Filing Status</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <AlertCircle className="h-5 w-5 text-yellow-600" />
-                        <span>Not Filed</span>
-                      </div>
-                      <Badge variant="outline">Pending</Badge>
-                    </div>
-                    <Button className="w-full">
-                      <Upload className="h-4 w-4 mr-2" />
-                      File GSTR-1
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download JSON
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Download Excel
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Import Data
-                    </Button>
-                  </CardContent>
-                </Card>
+              <div className="text-center py-8">
+                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">GST Filing</h3>
+                <p className="text-gray-500 mb-6">File your GSTR-1 returns directly to the GST portal</p>
+                <Button disabled>
+                  <Upload className="h-4 w-4 mr-2" />
+                  File GSTR-1 (Coming Soon)
+                </Button>
               </div>
             </TabsContent>
 
             <TabsContent value="reconciliation" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Data Reconciliation</CardTitle>
-                  <CardDescription>
-                    Compare your books with GSTR-2A and identify mismatches
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <CheckCircle className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium mb-2">No reconciliation data</p>
-                    <p className="text-sm">Upload GSTR-2A data to start reconciliation</p>
-                    <Button className="mt-4">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload GSTR-2A
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="text-center py-8">
+                <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">GST Reconciliation</h3>
+                <p className="text-gray-500 mb-6">Compare your books with GSTR-2A data</p>
+                <Button disabled>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Start Reconciliation (Coming Soon)
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="reports" className="space-y-6">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="flex-1">
-                  <Input
-                    placeholder="Search invoices..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm"
-                  />
+              <div className="text-center py-8">
+                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">GST Reports</h3>
+                <p className="text-gray-500 mb-6">Generate detailed GST reports and analytics</p>
+                <div className="flex justify-center space-x-4">
+                  <Button variant="outline" disabled>
+                    HSN Summary
+                  </Button>
+                  <Button variant="outline" disabled>
+                    Tax Analysis
+                  </Button>
+                  <Button variant="outline" disabled>
+                    Audit Trail
+                  </Button>
                 </div>
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Transactions</SelectItem>
-                    <SelectItem value="b2b">B2B Only</SelectItem>
-                    <SelectItem value="b2c">B2C Only</SelectItem>
-                    <SelectItem value="exports">Exports Only</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Detailed Reports</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg font-medium mb-2">No transaction data</p>
-                    <p className="text-sm">Add sales invoices to generate detailed reports</p>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
           </Tabs>
         </CardContent>
