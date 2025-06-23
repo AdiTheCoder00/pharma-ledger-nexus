@@ -149,6 +149,8 @@ export class ImportService {
     const errors: string[] = [];
     let success = 0;
 
+
+
     // Group items by invoice number
     const invoiceGroups = new Map<string, BusyInvoiceImport[]>();
     busyInvoices.forEach(item => {
@@ -179,12 +181,12 @@ export class ImportService {
           customer = newCustomer;
         }
 
-        // Calculate totals
-        const subtotal = items.reduce((sum, item) => sum + item.taxable_amount, 0);
-        const cgstTotal = items.reduce((sum, item) => sum + (item.cgst_amount || 0), 0);
-        const sgstTotal = items.reduce((sum, item) => sum + (item.sgst_amount || 0), 0);
-        const igstTotal = items.reduce((sum, item) => sum + (item.igst_amount || 0), 0);
-        const totalAmount = items.reduce((sum, item) => sum + item.total_amount, 0);
+        // Calculate totals with proper numeric conversion
+        const subtotal = items.reduce((sum: number, item: any) => sum + (Number(item.taxable_amount) || 0), 0);
+        const cgstTotal = items.reduce((sum: number, item: any) => sum + (Number(item.cgst_amount) || 0), 0);
+        const sgstTotal = items.reduce((sum: number, item: any) => sum + (Number(item.sgst_amount) || 0), 0);
+        const igstTotal = items.reduce((sum: number, item: any) => sum + (Number(item.igst_amount) || 0), 0);
+        const totalAmount = items.reduce((sum: number, item: any) => sum + (Number(item.total_amount) || 0), 0);
 
         // Create invoice
         const invoiceData = {
@@ -194,11 +196,11 @@ export class ImportService {
           customerType: firstItem.customer_gst ? "B2B" as const : "B2C" as const,
           customerGstin: firstItem.customer_gst || null,
           invoiceDate: new Date(firstItem.invoice_date),
-          subtotal: String(subtotal),
-          cgst: String(cgstTotal),
-          sgst: String(sgstTotal),
-          igst: String(igstTotal),
-          totalAmount: String(totalAmount),
+          subtotal: String(subtotal || 0),
+          cgst: String(cgstTotal || 0),
+          sgst: String(sgstTotal || 0),
+          igst: String(igstTotal || 0),
+          totalAmount: String(totalAmount || 0),
           paymentStatus: "paid",
         };
 
@@ -217,18 +219,18 @@ export class ImportService {
           const itemData = {
             invoiceId: createdInvoice[0].id,
             stockItemId: stockItemId,
-            drugName: item.item_name,
+            drugName: item.item_name || "Unknown Item",
             batch: item.batch || "BATCH001",
             hsnCode: item.hsn_code || "30049000",
-            quantity: item.quantity,
-            rate: String(item.rate),
-            discount: String(item.discount || 0),
-            gstRate: String(item.gst_rate || 12),
-            taxableAmount: String(item.taxable_amount),
-            cgstAmount: String(item.cgst_amount || 0),
-            sgstAmount: String(item.sgst_amount || 0),
-            igstAmount: String(item.igst_amount || 0),
-            totalAmount: String(item.total_amount),
+            quantity: Number(item.quantity) || 1,
+            rate: String(Number(item.rate) || 0),
+            discount: String(Number(item.discount) || 0),
+            gstRate: String(Number(item.gst_rate) || 12),
+            taxableAmount: String(Number(item.taxable_amount) || 0),
+            cgstAmount: String(Number(item.cgst_amount) || 0),
+            sgstAmount: String(Number(item.sgst_amount) || 0),
+            igstAmount: String(Number(item.igst_amount) || 0),
+            totalAmount: String(Number(item.total_amount) || 0),
           };
 
           await db.insert(salesInvoiceItems).values(itemData);
@@ -259,10 +261,10 @@ export class ImportService {
         
         if (!invoiceMap.has(invoiceNumber)) {
           invoiceMap.set(invoiceNumber, {
-            invoiceNumber,
-            date: transactionDate,
-            customerName,
-            customerGst: transaction.party_gst || '',
+            invoice_number: invoiceNumber,
+            invoice_date: transactionDate,
+            customer_name: customerName,
+            customer_gst: transaction.party_gst || '',
             items: [],
             subtotal: 0,
             cgst: 0,
@@ -312,6 +314,9 @@ export class ImportService {
     
     // Convert grouped transactions to invoices and import them
     const invoices = Array.from(invoiceMap.values());
+    
+
+    
     const result = await this.importInvoices(invoices);
     
     return result;
