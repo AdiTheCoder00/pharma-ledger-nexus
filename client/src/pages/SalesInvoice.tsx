@@ -1,24 +1,95 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnimatedCard } from "@/components/ui/animated-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Plus, Search, Download, Eye, Edit, Trash2, FileText } from 'lucide-react';
+import { ShoppingCart, Plus, Search, Download, Eye, Edit, Trash2, FileText, Package2, TruckIcon, Calculator } from 'lucide-react';
 import CreateInvoiceModal from '@/components/modals/CreateInvoiceModal';
 import { dataStore } from '@/store/dataStore';
 import { SalesInvoice } from '@/types';
 import { toast } from "@/components/ui/sonner";
 
 const SalesInvoicePage = () => {
+  const location = useLocation();
   const [invoices, setInvoices] = useState<SalesInvoice[]>([]);
   const [filteredInvoices, setFilteredInvoices] = useState<SalesInvoice[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+
+  // Get page info based on current route
+  const getPageInfo = () => {
+    const path = location.pathname;
+    switch (path) {
+      case '/sales/invoice':
+        return { 
+          title: 'Sales Invoice', 
+          description: 'Create and manage sales invoices', 
+          icon: ShoppingCart,
+          content: 'invoice'
+        };
+      case '/sales/sales-return':
+        return { 
+          title: 'Sales Return', 
+          description: 'Process customer returns and refunds', 
+          icon: FileText,
+          content: 'return'
+        };
+      case '/sales/delivery-notes':
+        return { 
+          title: 'Delivery Notes', 
+          description: 'Track delivery confirmations and receipts', 
+          icon: TruckIcon,
+          content: 'delivery'
+        };
+      case '/sales/quotations':
+        return { 
+          title: 'Quotations', 
+          description: 'Create and manage price quotations', 
+          icon: FileText,
+          content: 'quotation'
+        };
+      case '/purchase/purchase-order':
+        return { 
+          title: 'Purchase Order', 
+          description: 'Create and manage purchase orders', 
+          icon: ShoppingCart,
+          content: 'purchase-order'
+        };
+      case '/purchase/purchase-invoice':
+        return { 
+          title: 'Purchase Invoice', 
+          description: 'Process supplier invoices and payments', 
+          icon: FileText,
+          content: 'purchase-invoice'
+        };
+      case '/purchase/purchase-return':
+        return { 
+          title: 'Purchase Return', 
+          description: 'Return items to suppliers', 
+          icon: Package2,
+          content: 'purchase-return'
+        };
+      case '/purchase/goods-receipt':
+        return { 
+          title: 'Goods Receipt', 
+          description: 'Record received inventory from suppliers', 
+          icon: TruckIcon,
+          content: 'goods-receipt'
+        };
+      default:
+        return { 
+          title: 'Sales Invoice', 
+          description: 'Create and manage sales invoices', 
+          icon: ShoppingCart,
+          content: 'invoice'
+        };
+    }
+  };
 
   const loadInvoices = () => {
     const invoiceList = dataStore.getSalesInvoices();
@@ -65,73 +136,49 @@ const SalesInvoicePage = () => {
     };
   };
 
-  const stats = getTotalStats();
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
-      <div className="ml-64 p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <ShoppingCart className="h-8 w-8 mr-3" />
-            Sales Invoice
-          </h1>
-          <p className="text-gray-600">Create and manage sales invoices</p>
-        </div>
-
-        <AnimatedCard>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Invoice Management</CardTitle>
-                <CardDescription>Create new invoices and track sales</CardDescription>
-              </div>
-              <Button onClick={() => setShowCreateModal(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Invoice
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Search and Filter Bar */}
+  const renderContent = (contentType: string) => {
+    switch (contentType) {
+      case 'invoice':
+        return (
+          <>
+            {/* Invoice Management Content */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Search by invoice number or customer name..."
+                  placeholder="Search invoices..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="partial">Partial</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              <div className="flex gap-2">
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="partial">Partial</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Invoices Table */}
             {filteredInvoices.length > 0 ? (
-              <div className="rounded-md border">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Invoice Details</TableHead>
+                      <TableHead>Invoice #</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead>Date</TableHead>
-                      <TableHead>Items</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
@@ -139,49 +186,23 @@ const SalesInvoicePage = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredInvoices.map((invoice) => (
-                      <TableRow key={invoice.id} className="hover:bg-gray-50">
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{invoice.invoiceNumber}</p>
-                            <p className="text-sm text-gray-600">ID: {invoice.id}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{invoice.customerName}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm">
-                            {new Date(invoice.date).toLocaleDateString()}
-                          </p>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm">{invoice.items.length} items</p>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">₹{invoice.totalAmount.toFixed(2)}</p>
-                            <p className="text-xs text-gray-600">
-                              Tax: ₹{(invoice.cgst + invoice.sgst + invoice.igst).toFixed(2)}
-                            </p>
-                          </div>
-                        </TableCell>
+                      <TableRow key={invoice.id}>
+                        <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                        <TableCell>{invoice.customerName}</TableCell>
+                        <TableCell>{new Date(invoice.date).toLocaleDateString()}</TableCell>
+                        <TableCell>₹{invoice.totalAmount.toLocaleString()}</TableCell>
                         <TableCell>
                           <Badge variant={getStatusColor(invoice.paymentStatus)}>
-                            {invoice.paymentStatus.charAt(0).toUpperCase() + invoice.paymentStatus.slice(1)}
+                            {invoice.paymentStatus.toUpperCase()}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2">
-                            <Button variant="ghost" size="sm">
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="outline" size="sm">
                               <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <FileText className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
@@ -193,52 +214,100 @@ const SalesInvoicePage = () => {
             ) : (
               <div className="text-center py-12">
                 <ShoppingCart className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {invoices.length === 0 ? 'No invoices created yet' : 'No invoices match your search'}
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  {invoices.length === 0 
-                    ? 'Create your first invoice to get started'
-                    : 'Try adjusting your search or filter criteria'
-                  }
-                </p>
-                {invoices.length === 0 && (
-                  <Button onClick={() => setShowCreateModal(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create First Invoice
-                  </Button>
-                )}
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No invoices found</h3>
+                <p className="text-gray-500 mb-6">Get started by creating your first invoice</p>
+                <Button onClick={() => setShowCreateModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create First Invoice
+                </Button>
               </div>
             )}
+          </>
+        );
+      
+      default:
+        return (
+          <div className="text-center py-12">
+            <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Feature Coming Soon</h3>
+            <p className="text-gray-500 mb-6">This feature is under development and will be available soon</p>
+            <Button disabled variant="outline">
+              Coming Soon
+            </Button>
+          </div>
+        );
+    }
+  };
 
-            {/* Summary Stats */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-blue-600">Total Invoices</p>
-                <p className="text-2xl font-bold text-blue-900">{stats.totalInvoices}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-green-600">Total Sales</p>
-                <p className="text-2xl font-bold text-green-900">₹{stats.totalAmount.toLocaleString()}</p>
-              </div>
-              <div className="bg-yellow-50 p-4 rounded-lg">
-                <p className="text-sm text-yellow-600">Paid Amount</p>
-                <p className="text-2xl font-bold text-yellow-900">₹{stats.paidAmount.toLocaleString()}</p>
-              </div>
-              <div className="bg-red-50 p-4 rounded-lg">
-                <p className="text-sm text-red-600">Pending Amount</p>
-                <p className="text-2xl font-bold text-red-900">₹{stats.pendingAmount.toLocaleString()}</p>
-              </div>
+  const stats = getTotalStats();
+  const { title, description, icon: Icon, content } = getPageInfo();
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
+      <div className="ml-64 p-6">
+        <div className="mb-6">
+          <div className="flex items-center space-x-3 mb-2">
+            <Icon className="h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+            <Badge variant="outline" className="ml-2">
+              {location.pathname.split('/').pop()?.replace('-', ' ').toUpperCase()}
+            </Badge>
+          </div>
+          <p className="text-gray-600">{description}</p>
+        </div>
+
+        {/* Summary Stats for Invoice page */}
+        {content === 'invoice' && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-600">Total Invoices</p>
+              <p className="text-2xl font-bold text-blue-900">{stats.totalInvoices}</p>
             </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <p className="text-sm text-green-600">Total Amount</p>
+              <p className="text-2xl font-bold text-green-900">₹{stats.totalAmount.toLocaleString()}</p>
+            </div>
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <p className="text-sm text-yellow-600">Paid Amount</p>
+              <p className="text-2xl font-bold text-yellow-900">₹{stats.paidAmount.toLocaleString()}</p>
+            </div>
+            <div className="bg-red-50 p-4 rounded-lg">
+              <p className="text-sm text-red-600">Pending Amount</p>
+              <p className="text-2xl font-bold text-red-900">₹{stats.pendingAmount.toLocaleString()}</p>
+            </div>
+          </div>
+        )}
+
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>{title} Management</CardTitle>
+                <CardDescription>{description}</CardDescription>
+              </div>
+              {content === 'invoice' && (
+                <Button onClick={() => setShowCreateModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Invoice
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {renderContent(content)}
           </CardContent>
-        </AnimatedCard>
+        </Card>
       </div>
 
-      <CreateInvoiceModal 
-        open={showCreateModal} 
-        onOpenChange={setShowCreateModal}
-        onInvoiceCreated={loadInvoices}
-      />
+      {content === 'invoice' && (
+        <CreateInvoiceModal 
+          open={showCreateModal} 
+          onOpenChange={setShowCreateModal}
+          onInvoiceCreated={loadInvoices}
+        />
+      )}
     </div>
   );
 };

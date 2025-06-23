@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedCard } from "@/components/ui/animated-card";
@@ -6,17 +7,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Plus, Search, Download, Edit, Trash2, Phone, Mail, MapPin } from 'lucide-react';
+import { Users, Plus, Search, Download, Edit, Trash2, Phone, Mail, MapPin, FileText, CreditCard } from 'lucide-react';
 import AddCustomerModal from '@/components/modals/AddCustomerModal';
 import { dataStore } from '@/store/dataStore';
 import { Customer } from '@/types';
 import { toast } from "@/components/ui/sonner";
 
 const Customers = () => {
+  const location = useLocation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Get page info based on current route
+  const getPageInfo = () => {
+    const path = location.pathname;
+    switch (path) {
+      case '/parties/customers':
+        return { title: 'Customers', description: 'Manage customer information and profiles', icon: Users };
+      case '/parties/suppliers':
+        return { title: 'Suppliers', description: 'Manage supplier information and contacts', icon: Users };
+      case '/parties/drug-licenses':
+        return { title: 'Drug Licenses', description: 'Track drug licenses and regulatory compliance', icon: FileText };
+      case '/parties/credit-limits':
+        return { title: 'Credit Limits', description: 'Manage customer credit limits and terms', icon: CreditCard };
+      default:
+        return { title: 'Customers', description: 'Manage customer information and profiles', icon: Users };
+    }
+  };
 
   const loadCustomers = () => {
     const customerList = dataStore.getCustomers();
@@ -59,16 +78,21 @@ const Customers = () => {
     }
   };
 
+  const { title, description, icon: Icon } = getPageInfo();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       <div className="ml-64 p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <Users className="h-8 w-8 mr-3" />
-            Customers
-          </h1>
+          <div className="flex items-center space-x-3 mb-2">
+            <Icon className="h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+            <Badge variant="outline" className="ml-2">
+              {location.pathname.split('/').pop()?.replace('-', ' ').toUpperCase()}
+            </Badge>
+          </div>
           <p className="text-gray-600">Manage your customer database</p>
         </div>
 
