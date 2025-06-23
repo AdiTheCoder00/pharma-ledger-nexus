@@ -44,7 +44,7 @@ const Navigation = () => {
       label: 'Inventory',
       icon: Package,
       badge: '43',
-      badgeVariant: 'destructive',
+      badgeVariant: 'destructive' as const,
       children: [
         { id: 'stock-items', label: 'Stock Items' },
         { id: 'batch-tracking', label: 'Batch Tracking' },
