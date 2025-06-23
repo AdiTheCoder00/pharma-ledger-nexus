@@ -88,10 +88,20 @@ export default function DataImport() {
       });
 
       const result = await response.json();
-      setImportResults(result);
+      if (response.ok) {
+        setImportResults(result);
+      } else {
+        setImportResults({ 
+          success: 0, 
+          errors: [result.error || 'Import failed'] 
+        });
+      }
     } catch (error) {
       console.error('Import error:', error);
-      setImportResults({ success: 0, errors: ['Import failed due to network error'] });
+      setImportResults({ 
+        success: 0, 
+        errors: ['Import failed due to network error'] 
+      });
     } finally {
       setIsImporting(false);
     }

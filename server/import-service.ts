@@ -213,28 +213,42 @@ export class ImportService {
       const parser = new xmldom.DOMParser();
       const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
       
-      let records: NodeList;
-      if (type === 'customers') {
-        records = xmlDoc.querySelectorAll('Customer, Party, Account');
-      } else if (type === 'stock') {
-        records = xmlDoc.querySelectorAll('Item, Product, Stock');
-      } else {
-        records = xmlDoc.querySelectorAll('Invoice, Bill, Transaction');
+      let records: any[] = [];
+      const selectors = {
+        customers: ['Customer', 'Party', 'Account', 'Ledger'],
+        stock: ['Item', 'Product', 'Stock', 'Inventory'],
+        invoices: ['Invoice', 'Bill', 'Transaction', 'Voucher']
+      };
+
+      // Try different element selectors
+      for (const selector of selectors[type]) {
+        const elements = xmlDoc.getElementsByTagName(selector);
+        if (elements && elements.length > 0) {
+          records = Array.from(elements);
+          break;
+        }
       }
 
-      records.forEach((record: Element) => {
+      records.forEach((record: any) => {
         const item: any = {};
         
-        // Extract data from XML attributes and child elements
-        Array.from(record.attributes).forEach(attr => {
-          const key = attr.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-          item[key] = attr.value;
-        });
+        // Extract data from XML attributes
+        if (record.attributes) {
+          Array.from(record.attributes).forEach((attr: any) => {
+            const key = attr.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            item[key] = attr.value;
+          });
+        }
         
-        Array.from(record.children).forEach(child => {
-          const key = child.tagName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-          item[key] = child.textContent || child.getAttribute('value') || '';
-        });
+        // Extract data from child elements
+        if (record.childNodes) {
+          Array.from(record.childNodes).forEach((child: any) => {
+            if (child.nodeType === 1) { // Element node
+              const key = child.tagName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+              item[key] = child.textContent || child.getAttribute('value') || '';
+            }
+          });
+        }
         
         data.push(this.normalizeRecord(item, type));
       });
