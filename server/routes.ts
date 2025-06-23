@@ -110,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "File data is required" });
       }
 
-      const customers = importService.parseFile(fileData, 'customers', format);
+      const customers = await importService.parseFile(fileData, 'customers', format);
       const result = await importService.importCustomers(customers);
       res.json(result);
     } catch (error) {
@@ -128,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "File data is required" });
       }
 
-      const stockItems = importService.parseFile(fileData, 'stock', format);
+      const stockItems = await importService.parseFile(fileData, 'stock', format);
       const result = await importService.importStockItems(stockItems);
       res.json(result);
     } catch (error) {
@@ -146,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "File data is required" });
       }
 
-      const invoices = importService.parseFile(fileData, 'invoices', format);
+      const invoices = await importService.parseFile(fileData, 'invoices', format);
       const result = await importService.importInvoices(invoices);
       res.json(result);
     } catch (error) {

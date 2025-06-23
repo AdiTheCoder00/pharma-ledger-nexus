@@ -205,12 +205,12 @@ export class ImportService {
   }
 
   // Parse XML data to appropriate format
-  parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices') {
+  async parseXML(xmlContent: string, type: 'customers' | 'stock' | 'invoices') {
     const data = [];
     try {
-      // Server-side XML parsing using built-in XML parser
-      const { DOMParser } = require('@xmldom/xmldom');
-      const parser = new DOMParser();
+      // Server-side XML parsing using xmldom
+      const xmldom = await import('@xmldom/xmldom');
+      const parser = new xmldom.DOMParser();
       const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
       
       let records: NodeList;
@@ -303,16 +303,16 @@ export class ImportService {
       };
     } else if (type === 'stock') {
       return {
-        item_name: record.item_name || record.name || record.product_name || record.itemname || record.description,
-        manufacturer: record.manufacturer || record.company || record.brand,
-        category: record.category || record.group || record.itemgroup,
-        batch_number: record.batch_number || record.batch || record.batchno,
-        expiry_date: record.expiry_date || record.expiry || record.expirydate,
-        quantity: parseInt(record.quantity || record.stock || record.qty || record.closingstock || '0'),
-        mrp: parseFloat(record.mrp || record.selling_price || record.saleprice || record.retailprice || '0'),
-        purchase_rate: parseFloat(record.purchase_rate || record.cost_price || record.purchaseprice || record.costprice || '0'),
-        hsn_code: record.hsn_code || record.hsn || record.hsncode || record.servicecode,
-        rack_location: record.rack_location || record.location || record.binlocation,
+        item_name: record.item_name || record.name || record.product_name || record.itemname || record.description || record.drug_name || record.drugname,
+        manufacturer: record.manufacturer || record.company || record.brand || record.mfr,
+        category: record.category || record.group || record.itemgroup || record.type,
+        batch_number: record.batch_number || record.batch || record.batchno || record.batch_no,
+        expiry_date: record.expiry_date || record.expiry || record.expirydate || record.exp_date,
+        quantity: parseInt(record.quantity || record.stock || record.qty || record.closingstock || record.current_stock || '0'),
+        mrp: parseFloat(record.mrp || record.selling_price || record.saleprice || record.retailprice || record.sale_rate || '0'),
+        purchase_rate: parseFloat(record.purchase_rate || record.cost_price || record.purchaseprice || record.costprice || record.purchase_price || '0'),
+        hsn_code: record.hsn_code || record.hsn || record.hsncode || record.servicecode || record.hsn_sac,
+        rack_location: record.rack_location || record.location || record.binlocation || record.rack,
       };
     } else if (type === 'invoices') {
       return {
@@ -337,7 +337,7 @@ export class ImportService {
   }
 
   // Auto-detect file format and parse accordingly
-  parseFile(fileContent: string, type: 'customers' | 'stock' | 'invoices', format?: string) {
+  async parseFile(fileContent: string, type: 'customers' | 'stock' | 'invoices', format?: string) {
     if (!format) {
       // Auto-detect format
       if (fileContent.trim().startsWith('<?xml') || fileContent.includes('<')) {
@@ -351,7 +351,7 @@ export class ImportService {
 
     switch (format.toLowerCase()) {
       case 'xml':
-        return this.parseXML(fileContent, type);
+        return await this.parseXML(fileContent, type);
       case 'dat':
         return this.parseDAT(fileContent, type);
       case 'csv':
