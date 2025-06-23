@@ -34,6 +34,8 @@ const Navigation = () => {
     const path = location.pathname;
     if (path === "/") {
       setActiveSection("dashboard");
+    } else if (path === "/data-import") {
+      setActiveSection("data-import");
     } else if (path === "/settings") {
       setActiveSection("settings");
     } else if (path === "/inventory/stock-items") {
