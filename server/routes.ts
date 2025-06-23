@@ -1,13 +1,104 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { gstr1Service } from "./gstr1-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  // GSTR-1 HSN Categorization Routes
+  app.get("/api/gstr1/hsn-categorization", async (req, res) => {
+    try {
+      const { fromDate, toDate } = req.query;
+      if (!fromDate || !toDate) {
+        return res.status(400).json({ error: "fromDate and toDate are required" });
+      }
+      
+      const data = await gstr1Service.getHSNCategorization(
+        fromDate as string,
+        toDate as string
+      );
+      res.json(data);
+    } catch (error) {
+      console.error("Error generating HSN categorization:", error);
+      res.status(500).json({ error: "Failed to generate HSN categorization" });
+    }
+  });
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.get("/api/gstr1/hsn-summary", async (req, res) => {
+    try {
+      const { fromDate, toDate } = req.query;
+      if (!fromDate || !toDate) {
+        return res.status(400).json({ error: "fromDate and toDate are required" });
+      }
+      
+      const data = await gstr1Service.generateHSNSummary(
+        fromDate as string,
+        toDate as string
+      );
+      res.json(data);
+    } catch (error) {
+      console.error("Error generating HSN summary:", error);
+      res.status(500).json({ error: "Failed to generate HSN summary" });
+    }
+  });
+
+  app.get("/api/gstr1/b2b-summary", async (req, res) => {
+    try {
+      const { fromDate, toDate } = req.query;
+      if (!fromDate || !toDate) {
+        return res.status(400).json({ error: "fromDate and toDate are required" });
+      }
+      
+      const data = await gstr1Service.generateB2BSummary(
+        fromDate as string,
+        toDate as string
+      );
+      res.json(data);
+    } catch (error) {
+      console.error("Error generating B2B summary:", error);
+      res.status(500).json({ error: "Failed to generate B2B summary" });
+    }
+  });
+
+  app.get("/api/gstr1/b2c-summary", async (req, res) => {
+    try {
+      const { fromDate, toDate } = req.query;
+      if (!fromDate || !toDate) {
+        return res.status(400).json({ error: "fromDate and toDate are required" });
+      }
+      
+      const data = await gstr1Service.generateB2CSummary(
+        fromDate as string,
+        toDate as string
+      );
+      res.json(data);
+    } catch (error) {
+      console.error("Error generating B2C summary:", error);
+      res.status(500).json({ error: "Failed to generate B2C summary" });
+    }
+  });
+
+  // Initialize pharmaceutical HSN codes
+  app.post("/api/gstr1/seed-hsn", async (req, res) => {
+    try {
+      await gstr1Service.seedPharmaceuticalHSNCodes();
+      res.json({ message: "HSN codes seeded successfully" });
+    } catch (error) {
+      console.error("Error seeding HSN codes:", error);
+      res.status(500).json({ error: "Failed to seed HSN codes" });
+    }
+  });
+
+  // Seed sample data for demonstration
+  app.post("/api/sample-data/seed", async (req, res) => {
+    try {
+      const { seedSampleData } = await import("./sample-data");
+      const result = await seedSampleData();
+      res.json(result);
+    } catch (error) {
+      console.error("Error seeding sample data:", error);
+      res.status(500).json({ error: "Failed to seed sample data" });
+    }
+  });
 
   const httpServer = createServer(app);
 

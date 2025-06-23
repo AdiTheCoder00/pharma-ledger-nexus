@@ -9,6 +9,7 @@ import Settings from "./pages/Settings";
 import StockItems from "./pages/StockItems";
 import SalesInvoice from "./pages/SalesInvoice";
 import Customers from "./pages/Customers";
+import GSTR1Dashboard from "./pages/GSTR1Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,10 +49,10 @@ const App = () => (
           <Route path="/reports/balance-sheet" element={<Index />} />
           <Route path="/reports/stock-reports" element={<Index />} />
           <Route path="/reports/party-reports" element={<Index />} />
-          <Route path="/gst-compliance/gstr1-reports" element={<Settings />} />
+          <Route path="/gst-compliance/gstr1-reports" element={<GSTR1Dashboard />} />
           <Route path="/gst-compliance/gstr2a-reconciliation" element={<Settings />} />
           <Route path="/gst-compliance/gstr3b-filing" element={<Settings />} />
-          <Route path="/gst-compliance/hsn-summary" element={<Settings />} />
+          <Route path="/gst-compliance/hsn-summary" element={<GSTR1Dashboard />} />
           <Route path="/gst-compliance/gst-audit-trail" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
