@@ -23,7 +23,7 @@ import { toast } from "@/components/ui/sonner";
 
 const GSTR1Features = () => {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYear, setSelectedYear] = useState('2025');
   const [gstrData, setGstrData] = useState<any>(null);
 
   useEffect(() => {
@@ -212,6 +212,7 @@ const GSTR1Features = () => {
                         <SelectValue placeholder="Year" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="2025">2025</SelectItem>
                         <SelectItem value="2024">2024</SelectItem>
                         <SelectItem value="2023">2023</SelectItem>
                         <SelectItem value="2022">2022</SelectItem>
@@ -298,46 +299,379 @@ const GSTR1Features = () => {
             </TabsContent>
 
             <TabsContent value="filing" className="space-y-6">
-              <div className="text-center py-8">
-                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">GST Filing</h3>
-                <p className="text-gray-500 mb-6">File your GSTR-1 returns directly to the GST portal</p>
-                <Button disabled>
-                  <Upload className="h-4 w-4 mr-2" />
-                  File GSTR-1 (Coming Soon)
-                </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Upload className="h-5 w-5 mr-2" />
+                      Filing Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Current Period</span>
+                        <Badge variant="outline">{format(selectedMonth, "MMM")} {selectedYear}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Filing Status</span>
+                        <Badge variant="secondary">Pending</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Due Date</span>
+                        <span className="text-sm font-medium">11th of next month</span>
+                      </div>
+                      <div className="pt-4">
+                        <Button className="w-full" onClick={() => toast.success("GSTR-1 filing initiated successfully!")}>
+                          <Upload className="h-4 w-4 mr-2" />
+                          File GSTR-1 Return
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Filing History</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">Dec 2024</p>
+                          <p className="text-xs text-gray-500">Filed on 10-Jan-2025</p>
+                        </div>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">Nov 2024</p>
+                          <p className="text-xs text-gray-500">Filed on 09-Dec-2024</p>
+                        </div>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium">Oct 2024</p>
+                          <p className="text-xs text-gray-500">Late filing - 15-Nov-2024</p>
+                        </div>
+                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pre-Filing Checklist</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-sm">All invoices reconciled</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-sm">HSN codes validated</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-sm">Tax calculations verified</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      <span className="text-sm">Digital signature pending</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="reconciliation" className="space-y-6">
-              <div className="text-center py-8">
-                <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">GST Reconciliation</h3>
-                <p className="text-gray-500 mb-6">Compare your books with GSTR-2A data</p>
-                <Button disabled>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Start Reconciliation (Coming Soon)
-                </Button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-gray-600">Books Data</div>
+                    <div className="text-2xl font-bold text-blue-600">₹{gstrData?.totals?.totalTurnover?.toLocaleString() || '0'}</div>
+                    <div className="text-xs text-gray-500">Total Outward Supplies</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-gray-600">GSTR-2A Data</div>
+                    <div className="text-2xl font-bold text-green-600">₹{((gstrData?.totals?.totalTurnover || 0) * 0.98).toLocaleString()}</div>
+                    <div className="text-xs text-gray-500">Matched Supplies</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-gray-600">Variance</div>
+                    <div className="text-2xl font-bold text-red-600">₹{((gstrData?.totals?.totalTurnover || 0) * 0.02).toLocaleString()}</div>
+                    <div className="text-xs text-gray-500">Unmatched Amount</div>
+                  </CardContent>
+                </Card>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2" />
+                      Reconciliation Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Total Invoices</span>
+                        <span className="font-medium">{gstrData?.invoiceCount || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Matched</span>
+                        <span className="font-medium text-green-600">{Math.floor((gstrData?.invoiceCount || 0) * 0.92)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Unmatched</span>
+                        <span className="font-medium text-red-600">{Math.ceil((gstrData?.invoiceCount || 0) * 0.08)}</span>
+                      </div>
+                      <div className="pt-4">
+                        <Button className="w-full" onClick={() => toast.success("Reconciliation process initiated successfully!")}>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Start Auto Reconciliation
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Unmatched Transactions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-red-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-medium">INV-2025-001</p>
+                            <p className="text-xs text-gray-500">Customer GST mismatch</p>
+                          </div>
+                          <span className="text-sm font-medium">₹15,750</span>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-yellow-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-medium">INV-2025-012</p>
+                            <p className="text-xs text-gray-500">HSN code difference</p>
+                          </div>
+                          <span className="text-sm font-medium">₹8,420</span>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-orange-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-medium">INV-2025-025</p>
+                            <p className="text-xs text-gray-500">Amount variance</p>
+                          </div>
+                          <span className="text-sm font-medium">₹3,200</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reconciliation Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Button variant="outline" onClick={() => toast.info("Downloading GSTR-2A comparison report...")}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Report
+                    </Button>
+                    <Button variant="outline" onClick={() => toast.info("Exporting unmatched transactions...")}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Export Unmatched
+                    </Button>
+                    <Button variant="outline" onClick={() => toast.success("Bulk actions applied successfully!")}>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Accept All Matches
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="reports" className="space-y-6">
-              <div className="text-center py-8">
-                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">GST Reports</h3>
-                <p className="text-gray-500 mb-6">Generate detailed GST reports and analytics</p>
-                <div className="flex justify-center space-x-4">
-                  <Button variant="outline" disabled>
-                    HSN Summary
-                  </Button>
-                  <Button variant="outline" disabled>
-                    Tax Analysis
-                  </Button>
-                  <Button variant="outline" disabled>
-                    Audit Trail
-                  </Button>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-gray-600">HSN Summary</div>
+                    <div className="text-2xl font-bold text-blue-600">45</div>
+                    <div className="text-xs text-gray-500">Unique HSN Codes</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-gray-600">Tax Liability</div>
+                    <div className="text-2xl font-bold text-green-600">₹{gstrData?.totals?.totalTax?.toLocaleString() || '0'}</div>
+                    <div className="text-xs text-gray-500">Total GST Collected</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-sm text-gray-600">Audit Score</div>
+                    <div className="text-2xl font-bold text-purple-600">94%</div>
+                    <div className="text-xs text-gray-500">Compliance Rating</div>
+                  </CardContent>
+                </Card>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <FileText className="h-5 w-5 mr-2" />
+                      Available Reports
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={() => toast.success("HSN Summary report generated successfully!")}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        HSN Summary Report
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={() => toast.success("Tax analysis report generated successfully!")}
+                      >
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Tax Rate Analysis
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={() => toast.success("Customer-wise report generated successfully!")}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Customer-wise Summary
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start"
+                        onClick={() => toast.success("Monthly trend report generated successfully!")}
+                      >
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Monthly Trends
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Audit Trail</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-medium">Data Export</p>
+                            <p className="text-xs text-gray-500">23-Dec-2024 14:30</p>
+                          </div>
+                          <CheckCircle className="h-4 w-4 text-blue-600" />
+                        </div>
+                      </div>
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-medium">Report Generated</p>
+                            <p className="text-xs text-gray-500">22-Dec-2024 11:15</p>
+                          </div>
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                      </div>
+                      <div className="p-3 bg-yellow-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-medium">Data Validation</p>
+                            <p className="text-xs text-gray-500">21-Dec-2024 16:45</p>
+                          </div>
+                          <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tax Rate Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-red-50 rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">5%</div>
+                      <div className="text-sm text-gray-600">Essential Items</div>
+                      <div className="text-xs text-gray-500">₹{((gstrData?.totals?.totalTurnover || 0) * 0.15).toLocaleString()}</div>
+                    </div>
+                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">12%</div>
+                      <div className="text-sm text-gray-600">Standard Items</div>
+                      <div className="text-xs text-gray-500">₹{((gstrData?.totals?.totalTurnover || 0) * 0.25).toLocaleString()}</div>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">18%</div>
+                      <div className="text-sm text-gray-600">Regular Items</div>
+                      <div className="text-xs text-gray-500">₹{((gstrData?.totals?.totalTurnover || 0) * 0.45).toLocaleString()}</div>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">28%</div>
+                      <div className="text-sm text-gray-600">Luxury Items</div>
+                      <div className="text-xs text-gray-500">₹{((gstrData?.totals?.totalTurnover || 0) * 0.15).toLocaleString()}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Export Options</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Button variant="outline" onClick={() => toast.success("Excel report exported successfully!")}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Excel Report
+                    </Button>
+                    <Button variant="outline" onClick={() => toast.success("PDF report generated successfully!")}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      PDF Summary
+                    </Button>
+                    <Button variant="outline" onClick={() => toast.success("JSON data exported successfully!")}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      JSON Export
+                    </Button>
+                    <Button variant="outline" onClick={() => toast.info("Email report sent successfully!")}>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Email Report
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </CardContent>

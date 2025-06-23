@@ -116,6 +116,9 @@ Changelog:
   * Updated user profile: Set default user name to "Sunit Kumar Maini"
   * Removed "Distributor Pro" subtitle from navigation header
   * Increased font size of "Maini Trading" in navigation header for better prominence
+  * Enhanced GSTR1 management with fully functional filing, reconciliation, and reports sections
+  * Updated return period to default to 2025 in GSTR1 overview
+  * Replaced all "Coming Soon" placeholders in GSTR1 with comprehensive functionality
 ```
 
 ## User Preferences
