@@ -195,7 +195,9 @@ export class ImportService {
           customerName: customerName,
           customerType: firstItem.customer_gst ? "B2B" as const : "B2C" as const,
           customerGstin: firstItem.customer_gst || null,
-          invoiceDate: new Date(firstItem.invoice_date),
+          invoiceDate: firstItem.invoice_date && !isNaN(new Date(firstItem.invoice_date).getTime()) 
+            ? new Date(firstItem.invoice_date) 
+            : new Date(),
           subtotal: String(subtotal || 0),
           cgst: String(cgstTotal || 0),
           sgst: String(sgstTotal || 0),
