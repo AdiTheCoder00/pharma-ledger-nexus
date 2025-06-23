@@ -1,24 +1,44 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnimatedCard } from "@/components/ui/animated-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, Plus, Search, Filter, Download, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { Package, Plus, Search, Filter, Download, Edit, Trash2, AlertTriangle, Calendar, Settings } from 'lucide-react';
 import AddStockItemModal from '@/components/modals/AddStockItemModal';
 import { dataStore } from '@/store/dataStore';
 import { StockItem } from '@/types';
 import { toast } from "@/components/ui/sonner";
 
 const StockItems = () => {
+  const location = useLocation();
   const [stockItems, setStockItems] = useState<StockItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<StockItem[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+
+  // Get page info based on current route
+  const getPageInfo = () => {
+    const path = location.pathname;
+    switch (path) {
+      case '/inventory/stock-items':
+        return { title: 'Stock Items', description: 'Manage your pharmaceutical inventory', icon: Package };
+      case '/inventory/batch-tracking':
+        return { title: 'Batch Tracking', description: 'Track medicine batches and serial numbers', icon: Package };
+      case '/inventory/expiry-management':
+        return { title: 'Expiry Management', description: 'Monitor medicine expiry dates and alerts', icon: Calendar };
+      case '/inventory/stock-adjustment':
+        return { title: 'Stock Adjustment', description: 'Adjust stock levels and quantities', icon: Settings };
+      case '/inventory/low-stock-alerts':
+        return { title: 'Low Stock Alerts', description: 'Monitor and manage low stock notifications', icon: AlertTriangle };
+      default:
+        return { title: 'Stock Items', description: 'Manage your pharmaceutical inventory', icon: Package };
+    }
+  };
 
   const loadStockItems = () => {
     const items = dataStore.getStockItems();
@@ -72,7 +92,9 @@ const StockItems = () => {
     }
   };
 
-  const categories = [...new Set(stockItems.map(item => item.category))];
+  const categorySet = new Set(stockItems.map(item => item.category));
+  const categories = Array.from(categorySet);
+  const { title, description, icon: Icon } = getPageInfo();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,14 +102,17 @@ const StockItems = () => {
       
       <div className="ml-64 p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <Package className="h-8 w-8 mr-3" />
-            Stock Items
-          </h1>
-          <p className="text-gray-600">Manage your pharmaceutical inventory</p>
+          <div className="flex items-center space-x-3 mb-2">
+            <Icon className="h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+            <Badge variant="outline" className="ml-2">
+              {location.pathname.split('/').pop()?.replace('-', ' ').toUpperCase()}
+            </Badge>
+          </div>
+          <p className="text-gray-600">{description}</p>
         </div>
 
-        <AnimatedCard>
+        <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
@@ -112,93 +137,67 @@ const StockItems = () => {
                   className="pl-10"
                 />
               </div>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                More Filters
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              <div className="flex gap-2">
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="icon">
+                  <Filter className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Stock Items Table */}
             {filteredItems.length > 0 ? (
-              <div className="rounded-md border">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Drug Details</TableHead>
-                      <TableHead>Batch Info</TableHead>
-                      <TableHead>Stock</TableHead>
-                      <TableHead>Pricing</TableHead>
-                      <TableHead>Expiry</TableHead>
+                      <TableHead>Drug Name</TableHead>
+                      <TableHead>Manufacturer</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Batch</TableHead>
+                      <TableHead>Expiry Date</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead>MRP</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredItems.map((item) => {
-                      const stockStatus = getStockStatus(item);
+                      const { status, color } = getStockStatus(item);
                       return (
-                        <TableRow key={item.id} className="hover:bg-gray-50">
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">{item.drugName}</TableCell>
+                          <TableCell>{item.manufacturer}</TableCell>
+                          <TableCell>{item.category}</TableCell>
+                          <TableCell>{item.batch}</TableCell>
+                          <TableCell>{new Date(item.expiryDate).toLocaleDateString()}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>₹{item.mrp.toLocaleString()}</TableCell>
                           <TableCell>
-                            <div>
-                              <p className="font-medium">{item.drugName}</p>
-                              <p className="text-sm text-gray-600">{item.manufacturer}</p>
-                              <Badge variant="outline" className="mt-1">{item.category}</Badge>
-                            </div>
+                            <Badge variant={color}>{status}</Badge>
                           </TableCell>
                           <TableCell>
-                            <div>
-                              <p className="font-medium">{item.batch}</p>
-                              {item.rackLocation && (
-                                <p className="text-sm text-gray-600">Rack: {item.rackLocation}</p>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{item.quantity} units</p>
-                              <p className="text-sm text-gray-600">Min: {item.minStockLevel}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">₹{item.mrp}</p>
-                              <p className="text-sm text-gray-600">Cost: ₹{item.purchasePrice}</p>
-                              <p className="text-xs text-gray-500">GST: {item.gstRate}%</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <p className="text-sm">
-                              {new Date(item.expiryDate).toLocaleDateString()}
-                            </p>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={stockStatus.color}>
-                              {stockStatus.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm">
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
-                                variant="ghost" 
-                                size="sm"
+                                variant="outline" 
+                                size="sm" 
                                 onClick={() => handleDeleteItem(item.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -262,7 +261,7 @@ const StockItems = () => {
               </div>
             </div>
           </CardContent>
-        </AnimatedCard>
+        </Card>
       </div>
 
       <AddStockItemModal 

@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +22,100 @@ import {
 
 const Navigation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [expandedSections, setExpandedSections] = useState(['inventory', 'sales', 'accounting']);
+
+  useEffect(() => {
+    // Update active section based on current route
+    const path = location.pathname;
+    if (path === '/') {
+      setActiveSection('dashboard');
+    } else if (path === '/settings') {
+      setActiveSection('settings');
+    } else if (path === '/inventory/stock-items') {
+      setActiveSection('stock-items');
+      setExpandedSections(prev => prev.includes('inventory') ? prev : [...prev, 'inventory']);
+    } else if (path === '/inventory/batch-tracking') {
+      setActiveSection('batch-tracking');
+      setExpandedSections(prev => prev.includes('inventory') ? prev : [...prev, 'inventory']);
+    } else if (path === '/inventory/expiry-management') {
+      setActiveSection('expiry-management');
+      setExpandedSections(prev => prev.includes('inventory') ? prev : [...prev, 'inventory']);
+    } else if (path === '/inventory/stock-adjustment') {
+      setActiveSection('stock-adjustment');
+      setExpandedSections(prev => prev.includes('inventory') ? prev : [...prev, 'inventory']);
+    } else if (path === '/inventory/low-stock-alerts') {
+      setActiveSection('low-stock-alerts');
+      setExpandedSections(prev => prev.includes('inventory') ? prev : [...prev, 'inventory']);
+    } else if (path === '/sales/invoice') {
+      setActiveSection('sales-invoice');
+      setExpandedSections(prev => prev.includes('sales') ? prev : [...prev, 'sales']);
+    } else if (path === '/sales/sales-return') {
+      setActiveSection('sales-return');
+      setExpandedSections(prev => prev.includes('sales') ? prev : [...prev, 'sales']);
+    } else if (path === '/sales/delivery-notes') {
+      setActiveSection('delivery-notes');
+      setExpandedSections(prev => prev.includes('sales') ? prev : [...prev, 'sales']);
+    } else if (path === '/sales/quotations') {
+      setActiveSection('quotations');
+      setExpandedSections(prev => prev.includes('sales') ? prev : [...prev, 'sales']);
+    } else if (path === '/purchase/purchase-order') {
+      setActiveSection('purchase-order');
+      setExpandedSections(prev => prev.includes('purchase') ? prev : [...prev, 'purchase']);
+    } else if (path === '/purchase/purchase-invoice') {
+      setActiveSection('purchase-invoice');
+      setExpandedSections(prev => prev.includes('purchase') ? prev : [...prev, 'purchase']);
+    } else if (path === '/purchase/purchase-return') {
+      setActiveSection('purchase-return');
+      setExpandedSections(prev => prev.includes('purchase') ? prev : [...prev, 'purchase']);
+    } else if (path === '/purchase/goods-receipt') {
+      setActiveSection('goods-receipt');
+      setExpandedSections(prev => prev.includes('purchase') ? prev : [...prev, 'purchase']);
+    } else if (path === '/parties/customers') {
+      setActiveSection('customers');
+      setExpandedSections(prev => prev.includes('parties') ? prev : [...prev, 'parties']);
+    } else if (path === '/parties/suppliers') {
+      setActiveSection('suppliers');
+      setExpandedSections(prev => prev.includes('parties') ? prev : [...prev, 'parties']);
+    } else if (path === '/parties/drug-licenses') {
+      setActiveSection('drug-licenses');
+      setExpandedSections(prev => prev.includes('parties') ? prev : [...prev, 'parties']);
+    } else if (path === '/parties/credit-limits') {
+      setActiveSection('credit-limits');
+      setExpandedSections(prev => prev.includes('parties') ? prev : [...prev, 'parties']);
+    } else if (path === '/accounting/ledgers') {
+      setActiveSection('ledgers');
+      setExpandedSections(prev => prev.includes('accounting') ? prev : [...prev, 'accounting']);
+    } else if (path === '/accounting/journal-entries') {
+      setActiveSection('journal-entries');
+      setExpandedSections(prev => prev.includes('accounting') ? prev : [...prev, 'accounting']);
+    } else if (path === '/accounting/payment-receipt') {
+      setActiveSection('payment-receipt');
+      setExpandedSections(prev => prev.includes('accounting') ? prev : [...prev, 'accounting']);
+    } else if (path === '/accounting/credit-debit-notes') {
+      setActiveSection('credit-debit-notes');
+      setExpandedSections(prev => prev.includes('accounting') ? prev : [...prev, 'accounting']);
+    } else if (path === '/accounting/bank-reconciliation') {
+      setActiveSection('bank-reconciliation');
+      setExpandedSections(prev => prev.includes('accounting') ? prev : [...prev, 'accounting']);
+    } else if (path === '/reports/profit-loss') {
+      setActiveSection('profit-loss');
+      setExpandedSections(prev => prev.includes('reports') ? prev : [...prev, 'reports']);
+    } else if (path === '/reports/balance-sheet') {
+      setActiveSection('balance-sheet');
+      setExpandedSections(prev => prev.includes('reports') ? prev : [...prev, 'reports']);
+    } else if (path === '/reports/gst-reports') {
+      setActiveSection('gst-reports');
+      setExpandedSections(prev => prev.includes('reports') ? prev : [...prev, 'reports']);
+    } else if (path === '/reports/stock-reports') {
+      setActiveSection('stock-reports');
+      setExpandedSections(prev => prev.includes('reports') ? prev : [...prev, 'reports']);
+    } else if (path === '/reports/party-reports') {
+      setActiveSection('party-reports');
+      setExpandedSections(prev => prev.includes('reports') ? prev : [...prev, 'reports']);
+    }
+  }, [location.pathname]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => 
@@ -44,24 +136,95 @@ const Navigation = () => {
       case 'settings':
         navigate('/settings');
         break;
+      // Inventory items
       case 'stock-items':
         navigate('/inventory/stock-items');
         break;
+      case 'batch-tracking':
+        navigate('/inventory/batch-tracking');
+        break;
+      case 'expiry-management':
+        navigate('/inventory/expiry-management');
+        break;
+      case 'stock-adjustment':
+        navigate('/inventory/stock-adjustment');
+        break;
+      case 'low-stock-alerts':
+        navigate('/inventory/low-stock-alerts');
+        break;
+      // Sales items
       case 'sales-invoice':
         navigate('/sales/invoice');
         break;
+      case 'sales-return':
+        navigate('/sales/sales-return');
+        break;
+      case 'delivery-notes':
+        navigate('/sales/delivery-notes');
+        break;
+      case 'quotations':
+        navigate('/sales/quotations');
+        break;
+      // Purchase items
+      case 'purchase-order':
+        navigate('/purchase/purchase-order');
+        break;
+      case 'purchase-invoice':
+        navigate('/purchase/purchase-invoice');
+        break;
+      case 'purchase-return':
+        navigate('/purchase/purchase-return');
+        break;
+      case 'goods-receipt':
+        navigate('/purchase/goods-receipt');
+        break;
+      // Parties items
       case 'customers':
         navigate('/parties/customers');
         break;
+      case 'suppliers':
+        navigate('/parties/suppliers');
+        break;
+      case 'drug-licenses':
+        navigate('/parties/drug-licenses');
+        break;
+      case 'credit-limits':
+        navigate('/parties/credit-limits');
+        break;
+      // Accounting items
       case 'ledgers':
         navigate('/accounting/ledgers');
         break;
+      case 'journal-entries':
+        navigate('/accounting/journal-entries');
+        break;
+      case 'payment-receipt':
+        navigate('/accounting/payment-receipt');
+        break;
+      case 'credit-debit-notes':
+        navigate('/accounting/credit-debit-notes');
+        break;
+      case 'bank-reconciliation':
+        navigate('/accounting/bank-reconciliation');
+        break;
+      // Reports items
       case 'profit-loss':
         navigate('/reports/profit-loss');
         break;
+      case 'balance-sheet':
+        navigate('/reports/balance-sheet');
+        break;
+      case 'gst-reports':
+        navigate('/reports/gst-reports');
+        break;
+      case 'stock-reports':
+        navigate('/reports/stock-reports');
+        break;
+      case 'party-reports':
+        navigate('/reports/party-reports');
+        break;
       default:
-        // For other items, show a coming soon alert
-        alert(`${itemId.replace('-', ' ')} feature is coming soon!`);
+        navigate('/');
     }
   };
 
@@ -213,8 +376,11 @@ const Navigation = () => {
                   {item.children.map((child) => (
                     <Button
                       key={child.id}
-                      variant="ghost"
-                      className="w-full justify-start h-auto p-2 text-sm text-gray-600 hover:text-gray-900"
+                      variant={activeSection === child.id ? "secondary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start h-auto p-2 text-sm text-gray-600 hover:text-gray-900",
+                        activeSection === child.id && "bg-blue-50 text-blue-700 font-medium"
+                      )}
                       onClick={() => handleNavigation(child.id)}
                     >
                       {child.label}
